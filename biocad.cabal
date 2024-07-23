@@ -4,7 +4,6 @@ version:       0.1.0.0
 synopsis:      Biocad test task
 author:        Λ
 maintainer:    sobakavosne@gmail.com
-with-compiler: ghc-9.4.8
 category:      Database
 
 library
@@ -30,4 +29,6 @@ test-suite biocad-test
   type:             exitcode-stdio-1.0
   hs-source-dirs:   test src
   main-is:          Main.spec.hs
-  build-depends:    base >=4.16.4.0
+  build-depends:
+    , base    >=4.16.4.0
+    , biocad

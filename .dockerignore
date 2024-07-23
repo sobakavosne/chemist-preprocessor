@@ -1,0 +1,9 @@
+# Ignore Stack build artifacts
+.stack-work/
+
+# Ignore Haskell build artifacts
+dist/
+
+# Ignore hidden files and directories
+.*
+

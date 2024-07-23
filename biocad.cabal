@@ -10,7 +10,7 @@ category:      Database
 library
   exposed-modules:  DataTypes
   build-depends:
-    , base        >=4.16.4.0 && <4.17.2.1.0
+    , base        >=4.16.4.0
     , containers
 
   hs-source-dirs:   src
@@ -19,7 +19,7 @@ library
 executable biocad
   main-is:          Main.hs
   build-depends:
-    , base    >=4.16.4.0 && <4.17.2.1.0
+    , base    >=4.16.4.0
     , biocad
 
   hs-source-dirs:   app
@@ -30,4 +30,4 @@ test-suite biocad-test
   type:             exitcode-stdio-1.0
   hs-source-dirs:   test src
   main-is:          Main.spec.hs
-  build-depends:    base >=4.16.4.0 && <4.17.2.1.0
+  build-depends:    base >=4.16.4.0

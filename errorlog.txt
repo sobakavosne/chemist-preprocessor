@@ -1,0 +1,42 @@
+❯ docker compose -f docker-compose.yml -f docker-compose.override.yml up --build
+[+] Building 800.1s (18/18) FINISHED                                                                                                                                                              docker:default
+ => [biocad internal] load build definition from Dockerfile                                                                                                                                                 0.0s
+ => => transferring dockerfile: 1.12kB                                                                                                                                                                      0.0s
+ => [biocad internal] load metadata for docker.io/library/debian:bullseye-slim                                                                                                                              1.4s
+ => [biocad internal] load metadata for docker.io/library/debian:bullseye                                                                                                                                   1.4s
+ => [biocad internal] load .dockerignore                                                                                                                                                                    0.0s
+ => => transferring context: 233B                                                                                                                                                                           0.0s
+ => [biocad builder 1/7] FROM docker.io/library/debian:bullseye@sha256:7aef2e7d061743fdb57973dac3ddbceb0b0912746ca7e0ee7535016c38286561                                                                     0.0s
+ => [biocad stage-1 1/5] FROM docker.io/library/debian:bullseye-slim@sha256:b257e5e831aa9949737638f6d323cd563347b2a5571d98b9b15eef0c7cd80b68                                                                0.0s
+ => [biocad internal] load build context                                                                                                                                                                    0.2s
+ => => transferring context: 67.55MB                                                                                                                                                                        0.2s
+ => CACHED [biocad builder 2/7] WORKDIR /app                                                                                                                                                                0.0s
+ => CACHED [biocad builder 3/7] RUN   apt-get update -y &&   apt-get install -y build-essential   curl   libnuma-dev   zlib1g-dev   libgmp-dev   libgmp10   git   wget   lsb-release   software-properties  0.0s
+ => [biocad builder 4/7] COPY . .                                                                                                                                                                           0.1s
+ => [biocad builder 5/7] RUN   curl https://downloads.haskell.org/~ghcup/x86_64-linux-ghcup -o /usr/bin/ghcup &&   chmod +x /usr/bin/ghcup                                                                 57.9s
+ => [biocad builder 6/7] RUN   ghcup -v install ghc --isolate /usr/local --force 9.4.8 &&   ghcup -v install cabal --isolate /usr/local/bin --force latest                                                529.6s
+ => [biocad builder 7/7] RUN   cabal update &&   cabal install --installdir=/app exe:biocad &&   cabal build                                                                                              210.4s 
+ => CACHED [biocad stage-1 2/5] WORKDIR /app                                                                                                                                                                0.0s 
+ => CACHED [biocad stage-1 3/5] COPY --from=builder /app/biocad /app/biocad                                                                                                                                 0.0s 
+ => CACHED [biocad stage-1 4/5] RUN chmod +x /app/biocad                                                                                                                                                    0.0s 
+ => CACHED [biocad stage-1 5/5] RUN apt-get update &&   apt-get install -y libnuma1 libgmp10 &&   apt-get autoremove -y &&   apt-get clean &&   rm -rf /var/lib/apt/lists/*                                 0.0s 
+ => [biocad] exporting to image                                                                                                                                                                             0.0s 
+ => => exporting layers                                                                                                                                                                                     0.0s 
+ => => writing image sha256:5b89e1e1254a58b32230d89466122506b029fd55b9ced3919055efccf9424349                                                                                                                0.0s
+ => => naming to docker.io/library/biocad-biocad                                                                                                                                                            0.0s
+[+] Running 2/0
+ ✔ Container neo4j            Recreated                                                                                                                                                                     0.0s 
+ ✔ Container biocad-biocad-1  Recreated                                                                                                                                                                     0.0s 
+Attaching to biocad-1, neo4j
+neo4j     | 
+neo4j     | Folder /plugins is not accessible for user: 7474 or group 7474. This is commonly a file permissions issue on the mounted folder.
+neo4j     | 
+neo4j     | Hints to solve the issue:
+neo4j     | 1) Make sure the folder exists before mounting it. Docker will create the folder using root permissions before starting the Neo4j container. The root permissions disallow Neo4j from writing to the mounted folder.
+neo4j     | 2) Pass the folder owner's user ID and group ID to docker run, so that docker runs as that user.
+neo4j     | If the folder is owned by the current user, this can be done by adding this flag to your docker run command:
+neo4j     |   --user=$(id -u):$(id -g)
+neo4j     |        
+biocad-1  | Bonjour, Haskell
+neo4j exited with code 1
+biocad-1 exited with code 0

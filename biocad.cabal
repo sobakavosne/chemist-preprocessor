@@ -1,0 +1,33 @@
+cabal-version: 3.6
+name:          biocad
+version:       0.1.0.0
+synopsis:      Biocad test task
+author:        Λ
+maintainer:    sobakavosne@gmail.com
+with-compiler: ghc-9.4.8
+category:      Database
+
+library
+  exposed-modules:  DataTypes
+  build-depends:
+    , base        >=4.16.4.0 && <4.17.2.1.0
+    , containers
+
+  hs-source-dirs:   src
+  default-language: Haskell2010
+
+executable biocad
+  main-is:          Main.hs
+  build-depends:
+    , base    >=4.16.4.0 && <4.17.2.1.0
+    , biocad
+
+  hs-source-dirs:   app
+  default-language: Haskell2010
+
+test-suite biocad-test
+  default-language: Haskell2010
+  type:             exitcode-stdio-1.0
+  hs-source-dirs:   test src
+  main-is:          Main.spec.hs
+  build-depends:    base >=4.16.4.0 && <4.17.2.1.0

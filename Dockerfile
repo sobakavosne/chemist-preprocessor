@@ -21,8 +21,6 @@ RUN \
   autoconf \
   automake
 
-COPY . .
-
 RUN \
   curl https://downloads.haskell.org/~ghcup/x86_64-linux-ghcup -o /usr/bin/ghcup && \
   chmod +x /usr/bin/ghcup
@@ -36,9 +34,11 @@ RUN \
 
 ENV PATH="/root/.ghcup/bin:${PATH}"
 
+COPY . .
+
 RUN \
   cabal update && \
-  cabal install --installdir=/app exe:biocad && \ 
+  cabal install --installdir=/app exe:biocad && \
   cabal build
 
 # Stage 2: Runtime stage

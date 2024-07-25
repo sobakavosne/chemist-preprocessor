@@ -1,4 +1,8 @@
 services:
+  biocad:
+    build: 
+      dockerfile: Dockerfile.dev
+
   neo4j:
     environment:
       - NEO4J_server_memory_heap_initial__size=6G

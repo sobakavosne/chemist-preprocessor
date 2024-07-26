@@ -6,29 +6,42 @@ author:        Λ
 maintainer:    sobakavosne@gmail.com
 category:      Database
 
-library
-  exposed-modules:  DataTypes
+common shared-deps
   build-depends:
-    , base        >=4.16.4.0
+    , aeson
+    , base            >=4.16.4.0
     , containers
+    , dotenv
+    , hasbolt
+    , hasbolt-extras
+    , servant-server
+    , text
+    , wai
+    , warp
+
+  default-language: Haskell2010
+
+library
+  import:           shared-deps
+  exposed-modules:
+    Config
+    Database
+    DataTypes
 
   hs-source-dirs:   src
   default-language: Haskell2010
 
 executable biocad
+  import:           shared-deps
   main-is:          Main.hs
-  build-depends:
-    , base    >=4.16.4.0
-    , biocad
-
+  build-depends:    biocad
   hs-source-dirs:   app
   default-language: Haskell2010
 
 test-suite biocad-test
+  import:           shared-deps
   default-language: Haskell2010
   type:             exitcode-stdio-1.0
   hs-source-dirs:   test
   main-is:          Test.hs
-  build-depends:
-    , base    >=4.16.4.0
-    , biocad
+  build-depends:    biocad

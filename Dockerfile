@@ -26,7 +26,7 @@ RUN \
   chmod +x /usr/bin/ghcup
 
 ARG GHC=9.4.8
-ARG CABAL=latest
+ARG CABAL=3.6
 
 RUN \
   ghcup -v install ghc --isolate /usr/local --force ${GHC} && \

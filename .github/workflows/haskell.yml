@@ -3,8 +3,12 @@ name: Haskell CI
 on:
   push:
     branches: ["master"]
+    paths-ignore:
+      - "**/*.txt"
   pull_request:
     branches: ["master"]
+    paths-ignore:
+      - "**/*.txt"
 
 permissions:
   contents: read
@@ -36,7 +40,14 @@ jobs:
         run: |
           cabal update
           cabal build --only-dependencies --enable-tests --enable-benchmarks
+
       - name: Build
         run: cabal build --enable-tests --enable-benchmarks all
+
       - name: Run tests
         run: cabal test all
+
+      - name: Initialize environment and start Docker
+        run: |
+          chmod +x run.sh
+          ./run.sh

@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 
 module DataTypes
@@ -8,7 +9,9 @@ module DataTypes
   , ACCELERATE
   ) where
 
-import           Data.Maybe (Maybe)
+import           Data.Aeson   (FromJSON, ToJSON)
+import           Data.Maybe   (Maybe)
+import           GHC.Generics (Generic)
 
 data Molecule =
   Molecule
@@ -16,7 +19,11 @@ data Molecule =
     , smiles    :: String
     , iupacName :: String
     }
-  deriving (Show)
+  deriving (Show, Generic)
+
+instance FromJSON Molecule
+
+instance ToJSON Molecule
 
 data Reaction =
   Reaction

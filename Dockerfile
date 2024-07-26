@@ -19,7 +19,8 @@ RUN \
   apt-transport-https \
   gcc \
   autoconf \
-  automake
+  automake \
+  pkg-config
 
 RUN \
   curl https://downloads.haskell.org/~ghcup/x86_64-linux-ghcup -o /usr/bin/ghcup && \

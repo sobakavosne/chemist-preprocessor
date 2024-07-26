@@ -1,7 +1,10 @@
 biocad test task
 
-Running
+1. environment: create .env file
 
-For Unix-like systems (Linux, macOS, BSD):
-> chmod +x run.sh
-> ./run.sh
+2. running:
+
+   • for Unix-like systems (Linux, macOS, BSD):
+
+     > chmod +x run.sh
+     > ./run.sh

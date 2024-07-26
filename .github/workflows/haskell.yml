@@ -49,5 +49,6 @@ jobs:
 
       - name: Initialize environment and start Docker
         run: |
+          export NEO4J_PASSWORD=test_auth_token
           chmod +x run.sh
           ./run.sh

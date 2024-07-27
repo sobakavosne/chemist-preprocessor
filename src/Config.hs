@@ -5,7 +5,7 @@ module Config
   , loadConfig
   ) where
 
-import           Configuration.Dotenv (defaultConfig, loadFile)
+import qualified Configuration.Dotenv as Dotenv
 import           Control.Monad        (unless)
 import           Data.Maybe           (fromMaybe, isJust)
 import           Data.Text            (Text, pack)
@@ -15,19 +15,49 @@ data Config =
   Config
     { dbUser     :: Text
     , dbPassword :: Text
+    , dbHost     :: Text
+    , dbPort     :: Int
     }
+
+defaultUser :: String
+defaultUser = "neo4j"
+
+defaultPassword :: String
+defaultPassword = "test_auth_token"
+
+defaultHost :: String
+defaultHost = "localhost"
+
+defaultPort :: String
+defaultPort = "7687"
 
 loadConfig :: IO Config
 loadConfig = do
-  loadFile defaultConfig
+  Dotenv.loadFile Dotenv.defaultConfig
   maybeUser <- lookupEnv "NEO4J_USER"
   maybePassword <- lookupEnv "NEO4J_PASSWORD"
-  let user = fromMaybe "neo4j" maybeUser
-  let password = fromMaybe "password" maybePassword
+  maybeHost <- lookupEnv "NEO4J_HOST"
+  maybePort <- lookupEnv "NEO4J_PORT"
+  let user = fromMaybe defaultUser maybeUser
+  let password = fromMaybe defaultPassword maybePassword
+  let host = fromMaybe defaultHost maybeHost
+  let port = read $ fromMaybe defaultPort maybePort
   unless
     (isJust maybeUser)
     (putStrLn "Warning: NEO4J_USER not set. Using default value.")
   unless
     (isJust maybePassword)
     (putStrLn "Warning: NEO4J_PASSWORD not set. Using default value.")
-  return $ Config {dbUser = pack user, dbPassword = pack password}
+  unless
+    (isJust maybeHost)
+    (putStrLn "Warning: NEO4J_HOST not set. Using default value.")
+  unless
+    (isJust maybePort)
+    (putStrLn "Warning: NEO4J_PORT not set. Using default value.")
+  return $
+    Config
+      { dbUser = pack user
+      , dbPassword = pack password
+      , dbHost = pack host
+      , dbPort = port
+      }

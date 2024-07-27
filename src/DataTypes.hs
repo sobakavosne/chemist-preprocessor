@@ -30,7 +30,11 @@ data Reaction =
     { id   :: Int
     , name :: String
     }
-  deriving (Show)
+  deriving (Show, Generic)
+
+instance FromJSON Reaction
+
+instance ToJSON Reaction
 
 data Catalyst =
   Catalyst
@@ -38,17 +42,29 @@ data Catalyst =
     , smiles :: String
     , name   :: Maybe String
     }
-  deriving (Show)
+  deriving (Show, Generic)
+
+instance FromJSON Catalyst
+
+instance ToJSON Catalyst
 
 newtype PRODUCT_FROM =
   PRODUCT_FROM
     { amount :: Float
     }
-  deriving (Show)
+  deriving (Show, Generic)
+
+instance FromJSON PRODUCT_FROM
+
+instance ToJSON PRODUCT_FROM
 
 data ACCELERATE =
   ACCELERATE
     { temperature :: Float
     , pressure    :: Float
     }
-  deriving (Show)
+  deriving (Show, Generic)
+
+instance FromJSON ACCELERATE
+
+instance ToJSON ACCELERATE

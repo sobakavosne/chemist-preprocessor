@@ -39,7 +39,7 @@ COPY . .
 
 RUN \
   cabal update && \
-  cabal install --installdir=/app exe:biocad && \
+  cabal install --installdir=/app exe:chemist && \
   cabal build
 
 # Stage 2: Runtime stage
@@ -47,9 +47,9 @@ FROM debian:bullseye-slim
 
 WORKDIR /app
 
-COPY --from=builder /app/biocad /app/biocad
+COPY --from=builder /app/chemist /app/chemist
 
-RUN chmod +x /app/biocad
+RUN chmod +x /app/chemist
 
 RUN apt-get update && \
   apt-get install -y libnuma1 libgmp10 && \
@@ -59,4 +59,4 @@ RUN apt-get update && \
 
 EXPOSE 8080
 
-CMD ["/app/biocad"]
+CMD ["/app/chemist"]

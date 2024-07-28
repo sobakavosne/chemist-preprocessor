@@ -1,7 +1,7 @@
 cabal-version: 3.6
-name:          biocad
+name:          chemist
 version:       0.1.0.0
-synopsis:      Biocad test task
+synopsis:      Chemist 
 author:        Λ
 maintainer:    sobakavosne@gmail.com
 category:      Database
@@ -31,17 +31,17 @@ library
   hs-source-dirs:   src
   default-language: Haskell2010
 
-executable biocad
+executable chemist
   import:           shared-deps
   main-is:          Main.hs
-  build-depends:    biocad
+  build-depends:    chemist
   hs-source-dirs:   app
   default-language: Haskell2010
 
-test-suite biocad-test
+test-suite chemist-test
   import:           shared-deps
   default-language: Haskell2010
   type:             exitcode-stdio-1.0
   hs-source-dirs:   test
   main-is:          Test.hs
-  build-depends:    biocad
+  build-depends:    chemist

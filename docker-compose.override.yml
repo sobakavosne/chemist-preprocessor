@@ -1,5 +1,5 @@
 services:
-  biocad:
+  chemist:
     build: 
       dockerfile: Dockerfile.dev
 

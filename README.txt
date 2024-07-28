@@ -1,4 +1,4 @@
-biocad test task
+Chemist graph DB
 
 1. environment: create .env file
 

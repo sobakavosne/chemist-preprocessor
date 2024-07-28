@@ -1,8 +1,8 @@
 # version: '3.9'
 
 services:
-  biocad:
-    container_name: biocad
+  chemist:
+    container_name: chemist
     build:
       context: .
       dockerfile: Dockerfile

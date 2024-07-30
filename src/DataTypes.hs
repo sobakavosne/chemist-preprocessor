@@ -2,15 +2,16 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 
 module DataTypes
-  ( Molecule
-  , Reaction
-  , Catalyst
-  , PRODUCT_FROM
-  , ACCELERATE
+  ( Molecule(..)
+  , Reaction(..)
+  , Catalyst(..)
+  , PRODUCT_FROM(..)
+  , ACCELERATE(..)
   ) where
 
 import           Data.Aeson   (FromJSON, ToJSON)
-import           Data.Maybe   (Maybe)
+
+-- import           Database.Bolt.Extras (Label)
 import           GHC.Generics (Generic)
 
 data Molecule =
@@ -25,6 +26,9 @@ instance FromJSON Molecule
 
 instance ToJSON Molecule
 
+-- instance Label Molecule where
+--   label =  "Molecule"
+--
 data Reaction =
   Reaction
     { id   :: Int

@@ -1,20 +1,20 @@
+{-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Database
   ( initializeDatabase
   ) where
 
-import           Data.Map      (empty)
+import           Data.Map               (empty)
+import           Data.Text              (pack)
+import           Database.Bolt          (BoltActionT, queryP)
 
--- import           Data.Text          (Text)
-import           Database.Bolt (BoltActionT, RecordValue (..), at, queryP)
+import           DataTypes              (Molecule (..))
+import           Prelude                hiding (id)
 
--- import           Database.Bolt.Lazy (Node)
--- import           DataTypes          (Catalyst (..), Molecule (..),
---                                      Reaction (..))
 initializeDatabase :: BoltActionT IO ()
 initializeDatabase = do
-  queryP "CREATE INDEX ON :Molecule(id)" empty
-  queryP "CREATE INDEX ON :Reaction(id)" empty
-  queryP "CREATE INDEX ON :Catalyst(id)" empty
+  _ <- queryP "CREATE INDEX ON :Molecule(id)" empty
+  _ <- queryP "CREATE INDEX ON :Reaction(id)" empty
+  _ <- queryP "CREATE INDEX ON :Catalyst(id)" empty
   return ()

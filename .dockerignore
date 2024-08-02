@@ -4,6 +4,8 @@
 # Ignore Haskell build artifacts
 dist/
 
-# Ignore hidden files and directories
-.*
+# # Ignore hidden files and directories
+# .*
 
+# Ignore Docker-related files
+docker/

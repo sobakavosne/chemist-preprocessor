@@ -12,7 +12,7 @@ services:
       neo4j:
         condition: service_healthy
     healthcheck:
-      test: wget http://localhost:8080 || exit 1
+      test: wget -q -O /dev/null http://localhost:8080 || exit 1
       interval: 2s
       timeout: 2s
       retries: 10
@@ -20,7 +20,9 @@ services:
 
   neo4j:
     container_name: neo4j
-    image: neo4j:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.neo4j
     ports:
       - 7474:7474
       - 7687:7687
@@ -30,7 +32,6 @@ services:
       - NEO4J_apoc_import_file_enabled=true
       - NEO4J_apoc_import_file_use__neo4j__config=true
       - NEO4J_PLUGINS=["apoc"]
-      # - NEO4J_PLUGINS=["apoc", "graph-data-science"]
     volumes:
       - ./neo4j_db/data:/data
       - ./neo4j_db/logs:/logs
@@ -38,8 +39,37 @@ services:
       - ./neo4j_db/plugins:/plugins
     user: "${NEO4J_UID:?error}:${NEO4J_GID:?error}"
     healthcheck:
-      test: wget http://localhost:7474 || exit 1
+      test: wget -q -O /dev/null http://localhost:7474 || exit 1
       interval: 2s
       timeout: 2s
       retries: 10
       start_period: 1s
+
+  migration:
+    container_name: migration
+    image: neo4j:latest
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    entrypoint: [ "sh", "-c", "/migrations/migrate.sh" ]
+    volumes:
+      - ./migrations:/migrations
+    environment:
+      - NEO4J_AUTH=${NEO4J_USER}/${NEO4J_PASSWORD}
+  #
+  # migrations:
+  #   container_name: migrations
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.migrations
+  #   depends_on:
+  #     neo4j:
+  #       condition: service_healthy
+  #   environment:
+  #     - NEO4J_HTTP_PORT=7474
+  #     - NEO4J_BOLT_PORT=7687
+  #     - NEO4J_USER=${NEO4J_USER}
+  #     - NEO4J_PASSWORD=${NEO4J_PASSWORD}
+  #   volumes:
+  #     - ./migrations:/migrations
+  #   entrypoint: [ "/app/neo4j-entrypoint.sh" ]

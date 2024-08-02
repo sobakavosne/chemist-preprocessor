@@ -72,3 +72,28 @@ data ACCELERATE =
 instance FromJSON ACCELERATE
 
 instance ToJSON ACCELERATE
+
+newtype REAGENT_IN =
+  REAGENT_IN
+    { amount :: Float
+    }
+  deriving (Show, Generic)
+
+instance FromJSON REAGENT_IN
+
+instance ToJSON REAGENT_IN
+
+data ReactionDetails =
+  ReactionDetails
+    { reaction   :: Reaction
+    , reagents   :: [REAGENT_IN]
+    , products   :: [PRODUCT_FROM]
+    , catalyst   :: Maybe Catalyst
+    , molecules  :: [Molecule]
+    , accelerate :: Maybe ACCELERATE
+    }
+  deriving (Show, Generic)
+
+instance FromJSON ReactionDetails
+
+instance ToJSON ReactionDetails

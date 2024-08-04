@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE InstanceSigs          #-}
 
 module Domain.Models
   ( Molecule(..)
@@ -7,10 +8,12 @@ module Domain.Models
   , Catalyst(..)
   , PRODUCT_FROM(..)
   , ACCELERATE(..)
+  , ReactionDetails(..)
   ) where
 
 import           Data.Aeson   (FromJSON, ToJSON)
 
+import           Data.Default (Default (def))
 import           GHC.Generics (Generic)
 
 data Molecule =
@@ -40,7 +43,7 @@ data Catalyst =
   Catalyst
     { id     :: Int
     , smiles :: String
-    , name   :: Maybe String
+    , name   :: String
     }
   deriving (Show, Generic)
 
@@ -58,12 +61,20 @@ instance FromJSON PRODUCT_FROM
 
 instance ToJSON PRODUCT_FROM
 
-data ACCELERATE =
+data ACCELERATE
+  -- | `def` - the default ACCELERATE value corresponds to Standard Temperature and Pressure (STP):
+  -- - temperature = 273.15 K (Kelvin)
+  -- - pressure = 101.325 kPa (kilopascals)
+      =
   ACCELERATE
     { temperature :: Float
     , pressure    :: Float
     }
   deriving (Show, Generic)
+
+instance Default ACCELERATE where
+  def :: ACCELERATE
+  def = ACCELERATE {temperature = 273.15, pressure = 101.325}
 
 instance FromJSON ACCELERATE
 
@@ -79,14 +90,24 @@ instance FromJSON REAGENT_IN
 
 instance ToJSON REAGENT_IN
 
+data Conditions =
+  Conditions
+    { catalyst   :: Maybe [Catalyst]
+    , accelerate :: ACCELERATE
+    }
+  deriving (Show, Generic)
+
+instance FromJSON Conditions
+
+instance ToJSON Conditions
+
 data ReactionDetails =
   ReactionDetails
     { reaction   :: Reaction
-    , reagents   :: [REAGENT_IN]
-    , products   :: [PRODUCT_FROM]
-    , catalyst   :: Maybe Catalyst
     , molecules  :: [Molecule]
-    , accelerate :: Maybe ACCELERATE
+    , inbound    :: [REAGENT_IN]
+    , outbound   :: [PRODUCT_FROM]
+    , conditions :: Conditions
     }
   deriving (Show, Generic)
 

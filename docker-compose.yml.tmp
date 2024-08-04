@@ -1,0 +1,67 @@
+services:
+  chemist:
+    container_name: chemist
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${SERVER_PORT}:8080"
+    depends_on:
+      migration:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"] 
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 10s
+
+  neo4j:
+    container_name: neo4j
+    image: neo4j:latest
+    ports:
+      - "${NEO4J_HTTP_PORT}:7474"
+      - "${NEO4J_BOLT_PORT}:7687"
+    environment:
+      - NEO4J_AUTH=${NEO4J_USER}/${NEO4J_PASSWORD}
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_apoc_import_file_use__neo4j__config=true
+      - NEO4J_PLUGINS=["apoc"]
+    volumes:
+      - ./neo4j_db/data:/data
+      - ./neo4j_db/logs:/logs
+      - ./neo4j_db/import:/var/lib/neo4j/import
+      - ./neo4j_db/plugins:/plugins
+    user: "${NEO4J_UID:?error}:${NEO4J_GID:?error}"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7474"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+      start_period: 1s
+
+  migration:
+    container_name: migration
+    build:
+      context: .
+      dockerfile: Dockerfile.migration
+    depends_on:
+      - neo4j
+    entrypoint: [ "sh", "-c", "/scripts/migrate.sh" ]
+    volumes:
+      - ./migrations:/migrations
+      - ./migration_done:/migration_done
+    environment:
+      - NEO4J_USER=${NEO4J_USER}
+      - NEO4J_BOLT_PORT=${NEO4J_BOLT_PORT}
+      - NEO4J_HTTP_PORT=${NEO4J_HTTP_PORT}
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD}
+      - NEO4J_HOST=neo4j
+    healthcheck:
+      test: [ "CMD", "test", "-f", "/migration_done" ]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+      start_period: 1s
+    restart: on-failure

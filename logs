@@ -1,0 +1,30 @@
+ ✔ Container neo4j      Recreated                                                                                                                                                                          10.7s 
+ ✔ Container migration  Recreated                                                                                                                                                                           0.0s 
+ ✔ Container chemist    Recreated                                                                                                                                                                           0.1s 
+Attaching to chemist, migration, neo4j
+neo4j      | Installing Plugin 'apoc' from /var/lib/neo4j/labs/apoc-*-core.jar to /plugins/apoc.jar
+neo4j      | Applying default values for plugin apoc to neo4j.conf
+migration  | Waiting for Neo4j to be ready...
+migration  | Waiting for Neo4j to be ready...
+neo4j      | Changed password for user 'neo4j'. IMPORTANT: this change will only take effect if performed before the database is started for the first time.
+migration  | Waiting for Neo4j to be ready...
+neo4j      | 2024-08-03 23:43:28.929+0000 INFO  Logging config in use: File '/var/lib/neo4j/conf/user-logs.xml'
+neo4j      | 2024-08-03 23:43:28.961+0000 INFO  Starting...
+migration  | Waiting for Neo4j to be ready...
+neo4j      | 2024-08-03 23:43:29.890+0000 INFO  This instance is ServerId{06ee3a65} (06ee3a65-43ea-4fb8-9cc0-cae65ab17702)
+neo4j      | 2024-08-03 23:43:31.136+0000 INFO  ======== Neo4j 5.21.2 ========
+migration  | Waiting for Neo4j to be ready...
+migration  | Waiting for Neo4j to be ready...
+neo4j      | 2024-08-03 23:43:33.986+0000 INFO  Anonymous Usage Data is being sent to Neo4j, see https://neo4j.com/docs/usage-data/
+neo4j      | 2024-08-03 23:43:34.041+0000 INFO  Bolt enabled on 0.0.0.0:7687.
+neo4j      | 2024-08-03 23:43:34.653+0000 INFO  HTTP enabled on 0.0.0.0:7474.
+neo4j      | 2024-08-03 23:43:34.654+0000 INFO  Remote interface available at http://localhost:7474/
+neo4j      | 2024-08-03 23:43:34.658+0000 INFO  id: FAE99E2EC2A3999AFD88ABF7CF3319750F4AE2F6681DD1AB3085FAB3021F61EF
+neo4j      | 2024-08-03 23:43:34.658+0000 INFO  name: system
+neo4j      | 2024-08-03 23:43:34.658+0000 INFO  creationDate: 2024-07-28T15:48:02.781Z
+neo4j      | 2024-08-03 23:43:34.659+0000 INFO  Started.
+migration  | Applying migration: /migrations/001_init_db.cypher
+migration  | All migrations applied.
+migration exited with code 0
+Gracefully stopping... (press Ctrl+C again to force)
+dependency failed to start: container migration exited (0)

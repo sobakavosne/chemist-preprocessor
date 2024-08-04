@@ -1,6 +1,8 @@
 # Stage 1: Build stage
 FROM debian:bullseye AS builder
 
+COPY .env /app/.env
+
 WORKDIR /app
 
 RUN \

@@ -1,0 +1,12 @@
+FROM neo4j:latest
+
+COPY migrations /migrations
+COPY scripts/migrate.sh /scripts/migrate.sh
+COPY scripts/wait-for-migrations.sh /scripts/wait-for-migrations.sh
+COPY .env /app/.env
+
+RUN chmod +x /scripts/migrate.sh
+# RUN chmod +x /scripts/wait-for-migrations.sh
+
+# ENTRYPOINT ["/scripts/wait-for-migrations.sh", "&&", "/scripts/migrate.sh"]
+ENTRYPOINT ["/scripts/migrate.sh"]

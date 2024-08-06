@@ -1,9 +1,0 @@
-FROM neo4j:latest
-
-COPY migrations /migrations
-COPY scripts/neo4j-entrypoint.sh /neo4j-entrypoint.sh
-COPY .env /app/.env
-
-RUN chmod +x /neo4j-entrypoint.sh
-
-ENTRYPOINT ["/neo4j-entrypoint.sh"]

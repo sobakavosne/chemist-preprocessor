@@ -9,3 +9,6 @@ dist/
 
 # Ignore Docker-related files
 docker/
+
+# Ignore examples
+examples/

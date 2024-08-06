@@ -5,7 +5,6 @@ module API.Server
   ) where
 
 import           API.Endpoints            (api, server)
-import qualified Configuration.Dotenv     as Dotenv
 import           Control.Concurrent       (forkIO, threadDelay)
 import           Control.Monad            (forever)
 import           Data.Default             (Default (def))
@@ -17,7 +16,6 @@ import           System.Environment       (lookupEnv)
 
 startServer :: IO ()
 startServer = do
-  Dotenv.loadFile Dotenv.defaultConfig
   port <- read . fromMaybe (show $ port def) <$> lookupEnv "SERVER_PORT"
   _ <-
     forkIO $ do

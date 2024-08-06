@@ -19,7 +19,7 @@ CREATE
 (hydrochloricAcid:Molecule { id: 18, smiles: "Cl", iupacName: "Hydrochloric acid" }),
 (ethanoicAcid:Molecule { id: 19, smiles: "CC(=O)O", iupacName: "Acetic acid" }),
 (glycine:Molecule { id: 20, smiles: "NCC(C(=O)O)C", iupacName: "2-Aminoacetic acid" }),
-(hydrogenPeroxide: Molecule { id: 21, smiles: "OO", iupacName: "Hydrogen Peroxide" }),
+(hydrogenPeroxide: Molecule { id: 21, smiles: "OO", iupacName: "Hydrogen Peroxide" });
 
 CREATE
 (ethanolCombustion:Reaction { id: 1, name: "Ethanol Combustion" }),
@@ -64,6 +64,12 @@ CREATE
 (calcium:Catalyst { id: 18, smiles: "[Ca]", name: "Calcium" }),
 (manganeseDioxide:Catalyst { id: 19, smiles: "[O-][Mn+4][O-]", name: "Manganese Dioxide" }),
 (monolithicCuOCr2O3:Catalyst { id: 19, smiles: "O=[Cu]O.[Cr]=O", name: "Monolithic CuO and Cr2O3" }),
-(supportedCuOSiO2:Catalyst { id: 20, smiles: "O=[Cu].O=[Si](O)O" name: "Supported 25% CuO/SiO2" }),
-(supportedCuOAl2O3:Catalyst { id: 21, smiles: "O=[Cu].O=[Al]O" name: "Supported 25% CuO/Al2O3" }),
+(supportedCuOSiO2:Catalyst { id: 20, smiles: "O=[Cu].O=[Si](O)O", name: "Supported 25% CuO/SiO2" }),
+(supportedCuOAl2O3:Catalyst { id: 21, smiles: "O=[Cu].O=[Al]O", name: "Supported 25% CuO/Al2O3" }),
 (ultrasonicNiOSiO2:Catalyst { id: 22, smiles: "O=[Ni].O=[Si](O)O", name: "Ultrasonically Treated 25% NiO/SiO2" });
+
+CREATE INDEX reaction_id_index IF NOT EXISTS FOR (n:Reaction) ON (n.id);
+
+CREATE INDEX molecule_id_index IF NOT EXISTS FOR (n:Molecule) ON (n.id);
+
+CREATE INDEX catalyst_id_index IF NOT EXISTS FOR (n:Catalyst) ON (n.id);

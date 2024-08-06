@@ -23,5 +23,3 @@ run_migrations() {
 
 wait_for_neo4j
 run_migrations
-
-touch /migration_done

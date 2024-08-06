@@ -20,7 +20,7 @@ services:
 
   neo4j:
     container_name: neo4j
-    image: neo4j:latest
+    image: neo4j:3.5
     ports:
       - "${NEO4J_HTTP_PORT}:7474"
       - "${NEO4J_BOLT_PORT}:7687"

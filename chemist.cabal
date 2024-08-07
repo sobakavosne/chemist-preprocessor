@@ -13,6 +13,7 @@ common shared-deps
     , data-default
     , dotenv
     , hasbolt
+    , mtl
     , servant-server
     , text
     , wai

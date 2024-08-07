@@ -1,9 +1,21 @@
-FROM neo4j:latest
+FROM neo4j:4.1
+
+# RUN \
+#   apt-get update && \
+#   apt-get install -y openjdk-11-jdk curl && \
+#   apt-get clean && \
+#   rm -rf /var/lib/apt/lists/*
+
+# RUN mkdir -p /plugins
+
+# RUN curl -L -o /plugins/apoc-4.1.0.10-all.jar https://github.com/neo4j-contrib/neo4j-apoc-procedures/releases/download/4.1.0.10/apoc-4.1.0.10-all.jar
 
 COPY migrations /migrations
 COPY scripts/migrate.sh /scripts/migrate.sh
 COPY .env /app/.env
 
 RUN chmod +x /scripts/migrate.sh
+
+EXPOSE 7474 7687
 
 ENTRYPOINT ["/scripts/migrate.sh"]

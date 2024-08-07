@@ -42,4 +42,5 @@ do
   chmod 755 "$dir"
 done
 
+# docker compose -f docker-compose.yml up --build
 docker compose -f docker-compose.yml -f docker-compose.override.yml up --build

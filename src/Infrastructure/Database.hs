@@ -3,10 +3,11 @@ module Infrastructure.Database
   , checkNeo4j
   ) where
 
+import           Control.Monad.Except   (MonadError (catchError))
 import           Control.Monad.IO.Class (MonadIO)
 import           Data.Text              (pack)
-import           Database.Bolt          (BoltActionT, BoltCfg, connect, query,
-                                         run)
+import           Database.Bolt          (BoltActionT, BoltCfg, BoltError,
+                                         connect, query, run)
 
 withNeo4j :: MonadIO m => BoltCfg -> BoltActionT m b -> m b
 withNeo4j cfg action = do
@@ -15,11 +16,11 @@ withNeo4j cfg action = do
 
 checkNeo4j :: BoltActionT IO Bool
 checkNeo4j = do
-  result <- query (pack "RETURN 1")
-  return $
-    case result of
-      [] -> False
-      _  -> True
+  result <- query (pack "RETURN 1") `catchError` handleException
+  return $ not (null result)
+  where
+    handleException :: BoltError -> BoltActionT IO [a]
+    handleException _ = return []
 -- initializeDatabase :: BoltActionT IO ()
 -- initializeDatabase = do
 --   _ <- queryP "CREATE INDEX ON :Molecule(id)" empty

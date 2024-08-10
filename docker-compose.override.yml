@@ -1,4 +1,4 @@
-# services:
-#   chemist:
-#     build:
-#       dockerfile: Dockerfile.dev
+services:
+  chemist:
+    build:
+      dockerfile: Dockerfile.dev

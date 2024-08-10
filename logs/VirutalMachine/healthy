@@ -21,6 +21,7 @@
  ✔ Container migration  Recreated                                                                                                      0.1s 
 Attaching to migration, neo4j
 neo4j      | Changed password for user 'neo4j'.
+neo4j      | Active database: graph.db
 neo4j      | Directories in use:
 neo4j      |   home:         /var/lib/neo4j
 neo4j      |   config:       /var/lib/neo4j/conf
@@ -59,4 +60,3 @@ migration exited with code 1
  ✔ Container migration  Stopped                                                                                                        0.0s 
  ✔ Container neo4j      Stopped                                                                                                        5.8s 
 canceled
-

@@ -10,12 +10,17 @@ common shared-deps
   build-depends:
     , aeson
     , base
+    , bytestring
+    , case-insensitive
     , data-default
     , dotenv
+    , fast-logger
     , hasbolt
+    , http-types
     , mtl
     , servant-server
     , text
+    , time
     , wai
     , warp
 

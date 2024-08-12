@@ -4,13 +4,11 @@ CREATE INDEX molecule_id_index IF NOT EXISTS FOR (n:Molecule) ON (n.id);
 
 CREATE INDEX catalyst_id_index IF NOT EXISTS FOR (n:Catalyst) ON (n.id);
 
-// Show index information
 CALL db.indexes()
 YIELD id, name, properties, type, state
-CREATE (index:Index { id: id, name: name, properties: properties, type: type, state: state })
+MERGE (index:Index { id: id, name: name, properties: properties, type: type, state: state })
 RETURN index;
 
-// Create conditioinal transaction
 CALL {
   WITH '001' AS version
   
@@ -40,7 +38,16 @@ CALL {
   (hydrochloricAcid:Molecule { id: 18, smiles: "Cl", iupacName: "Hydrochloric acid" }),
   (ethanoicAcid:Molecule { id: 19, smiles: "CC(=O)O", iupacName: "Acetic acid" }),
   (glycine:Molecule { id: 20, smiles: "NCC(C(=O)O)C", iupacName: "2-Aminoacetic acid" }),
-  (hydrogenPeroxide:Molecule { id: 21, smiles: "OO", iupacName: "Hydrogen Peroxide" })
+  (hydrogenPeroxide:Molecule { id: 21, smiles: "OO", iupacName: "Hydrogen Peroxide" }),
+  (propanal:Molecule { id: 22, smiles: "CCC=O", iupacName: "Propanal" }),
+  (propanoicAcid:Molecule { id: 23, smiles: "CCC(=O)O", iupacName: "Propanoic Acid" }),
+  (polyformaldehyde:Molecule { id: 24, smiles: "(C=O)n", iupacName: "Polyformaldehyde" }),
+  (cyclohexane:Molecule { id: 25, smiles: "C1CCCCC1", iupacName: "Cyclohexane" }),
+  (sulfurTrioxide:Molecule { id: 26, smiles: "O=S(=O)=O", iupacName: "Sulfur trioxide" }),
+  (chlorine:Molecule { id: 27, smiles: "Cl", iupacName: "Chlorine" }),
+  (ethane:Molecule { id: 28, smiles: "CC", iupacName: "Ethane" }),
+  (glyoxal:Molecule { id: 29, smiles: "O=CC=O", iupacName: "Glyoxal" }),
+  (methanol:Molecule { id: 30, smiles: "CO", iupacName: "Methanol" })
   
   CREATE
   (ethanolCombustion:Reaction { id: 1, name: "Ethanol Combustion" }),
@@ -86,7 +93,16 @@ CALL {
   (manganeseDioxide:Catalyst { id: 19, smiles: "[O-][Mn+4][O-]", name: "Manganese Dioxide" }),
   (monolithicCuOCr2O3:Catalyst { id: 20, smiles: "O=[Cu]O.[Cr]=O", name: "Monolithic CuO and Cr2O3" }),
   (supportedCuOSiO2:Catalyst { id: 21, smiles: "O=[Cu].O=[Si](O)O", name: "Supported 25% CuO/SiO2" }),
-  (niOSiO2:Catalyst { id: 22, smiles: "O=[Ni].O=[Si](O)O", name: "NiO/SiO2" })
+  (niOSiO2:Catalyst { id: 22, smiles: "O=[Ni].O=[Si](O)O", name: "NiO/SiO2" }),
+  (phosphoricAcid:Catalyst { id: 23, smiles: "O=P(O)(O)O", name: "Phosphoric Acid" }),
+  (sulfuricAcid:Catalyst { id: 24, smiles: "O=S(=O)(O)O", name: "Sulfuric Acid" }),
+  (zeolite:Catalyst { id: 25, smiles: "O=[Si]O[Si](O)O[Si](O)O", name: "Zeolite" }),
+  (aluminum:Catalyst { id: 26, smiles: "[Al]", name: "Aluminum" }),
+  (acetobacter:Catalyst { id: 27, smiles: "CC(=O)OC[C@H](O)C(O)=O", name: "Acetobacter" }),
+  (vanadiumPentoxide:Catalyst { id: 28, smiles: "O=[V](O)O=[V](O)O=[V](O)O=[V](O)", name: "Vanadium pentoxide" }),
+  (chromium:Catalyst { id: 29, smiles: "[Cr]", name: "Chromium" }),
+  (alumina:Catalyst { id: 30, smiles: "O=[Al]O", name: "Alumina (Al2O3)" }),
+  (zincOxide:Catalyst { id: 31, smiles: "O=[Zn]", name: "Zinc Oxide (ZnO)" })
   
   CREATE (createdMigration:Migration { version: version })
   

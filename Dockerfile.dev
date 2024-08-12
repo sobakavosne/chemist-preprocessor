@@ -33,15 +33,17 @@ RUN \
   ghcup -v install ghc --isolate /usr/local --force ${GHC} && \
   ghcup -v install cabal --isolate /usr/local/bin --force ${CABAL}
 
-ENV PATH="/root/.ghcup/bin:${PATH}"
-
-RUN cabal update
+ENV PATH="/usr/local/bin:/usr/local/bin/ghc-${GHC}/bin:/usr/local/bin/cabal-${CABAL}/bin:${PATH}"
 
 COPY . .
 
-RUN \
-  cabal install --installdir=/app exe:chemist && \
-  cabal build
+RUN cabal update
+
+RUN cabal install --dependencies-only --installdir=/app
+
+RUN cabal build
+
+RUN cabal install --installdir=/app exe:chemist
 
 # Stage 2: Runtime stage
 FROM debian:bullseye-slim

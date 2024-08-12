@@ -67,14 +67,14 @@ data ACCELERATE
   -- - pressure = 101.325 kPa (kilopascals)
       =
   ACCELERATE
-    { temperature :: Float
-    , pressure    :: Float
+    { temperature :: [Float]
+    , pressure    :: [Float]
     }
   deriving (Show, Generic)
 
 instance Default ACCELERATE where
   def :: ACCELERATE
-  def = ACCELERATE {temperature = 273.15, pressure = 101.325}
+  def = ACCELERATE {temperature = [273.15], pressure = [101.325]}
 
 instance FromJSON ACCELERATE
 
@@ -90,24 +90,14 @@ instance FromJSON REAGENT_IN
 
 instance ToJSON REAGENT_IN
 
-data Conditions =
-  Conditions
-    { catalyst   :: Maybe [Catalyst]
-    , accelerate :: ACCELERATE
-    }
-  deriving (Show, Generic)
-
-instance FromJSON Conditions
-
-instance ToJSON Conditions
-
 data ReactionDetails =
   ReactionDetails
     { reaction   :: Reaction
     , molecules  :: [Molecule]
     , inbound    :: [REAGENT_IN]
     , outbound   :: [PRODUCT_FROM]
-    , conditions :: Conditions
+    , accelerate :: [ACCELERATE] -- list of all acceleration options
+    , catalyst   :: Maybe [Catalyst]
     }
   deriving (Show, Generic)
 

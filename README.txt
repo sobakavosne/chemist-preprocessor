@@ -1,28 +1,28 @@
 :Chemist Graph DB
 
-   • create .env file from examples/
+   • Create .env file from examples/
 
-   • for Unix-like systems (Linux, macOS, BSD):
+   • For Unix-like systems (Linux, macOS, BSD):
 
      > chmod +x run.sh
      > ./run.sh
 
 :Issues
 
-   • if you encounter a "permissions" error while Docker is running:
+   • If you encounter a "permissions" error while Docker is running:
      
      > sudo chown -R $USER:$USER neo4j_db/
      > sudo chmod -R 755 neo4j_db/
 
-   • when changing Neo4j versions, remember to remove the neo4j_db/plugins directory to 
+   • When changing Neo4j versions, remember to remove the neo4j_db/plugins directory to 
      avoid potential issues (check logs/Local/error for more details)
 
 :Notes
 
-   • Real reactions were utilized to understand the concept behind the graph database
+   ! Not all of the reactions are real
 
-   • Multicatalytic reaction example was referenced from an article available on
-     Springer: https://link.springer.com/article/10.1134/S096554412306018X
+   • Reaction example with 3d-metal oxides as catalysts was referenced from an article 
+     available on Springer: https://link.springer.com/article/10.1134/S096554412306018X
 
 :Future
 

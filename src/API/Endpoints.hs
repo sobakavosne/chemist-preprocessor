@@ -3,39 +3,28 @@
 
 module API.Endpoints
   ( api
-  , healthHandler
   , server
   ) where
 
-import           Control.Monad.IO.Class          (MonadIO (liftIO))
-import           Data.Bool                       (bool)
-import qualified Data.ByteString.Char8           as BS
-import qualified Data.ByteString.Lazy.Char8      as LBS
-import           Data.Time                       (getCurrentTime)
-import           DataTypes                       (HealthCheck (..))
-import           Infrastructure.Config           (loadBoltCfg)
-import           Infrastructure.Database         (checkNeo4j, withNeo4j)
-import           Network.HTTP.Types.Header       (hContentType)
-import qualified Servant                         as S
-import           System.Log.FastLogger           (ToLogStr (toLogStr),
-                                                  defaultBufSize, flushLogStr,
-                                                  pushLogStrLn)
-import           System.Log.FastLogger.LoggerSet (LoggerSet, newStdoutLoggerSet)
+import           Control.Monad.IO.Class     (MonadIO (liftIO))
+import           Data.Bool                  (bool)
+import qualified Data.ByteString.Char8      as BS
+import qualified Data.ByteString.Lazy.Char8 as LBS
+import           DataTypes                  (HealthCheck (..))
+import           Helpers                    (initLogger, logInfo)
+import           Infrastructure.Config      (loadBoltCfg)
+import           Infrastructure.Database    (checkNeo4j, getReaction, withNeo4j)
+import           Models                     (ReactionDetails)
+import           Network.HTTP.Types.Header  (hContentType)
+import           Prelude                    hiding (id)
+import qualified Servant                    as S
 
-type API
-   = "health" S.:> S.Get '[ S.JSON] (S.Headers '[ S.Header "Content-Type" String] HealthCheck)
+type API =
+  "health" S.:> S.Get '[ S.JSON] (S.Headers '[ S.Header "Content-Type" String] HealthCheck) S.:<|> 
+  "reaction" S.:> S.Capture "id" Int S.:> S.Get '[ S.JSON] (S.Headers '[ S.Header "Content-Type" String] ReactionDetails)
 
 api :: S.Proxy API
 api = S.Proxy
-
-initLogger :: IO LoggerSet
-initLogger = newStdoutLoggerSet defaultBufSize
-
-logInfo :: LoggerSet -> String -> IO ()
-logInfo logger msg = do
-  timestamp <- getCurrentTime
-  (pushLogStrLn logger . toLogStr) (unwords [show timestamp, "-", msg])
-  flushLogStr logger
 
 healthHandler ::
      S.Handler (S.Headers '[ S.Header "Content-Type" String] HealthCheck)
@@ -54,5 +43,15 @@ healthHandler = do
              , S.errHeaders = [(hContentType, BS.pack "application/json")]
              }
 
+reactionHandler ::
+     Int
+  -> S.Handler (S.Headers '[ S.Header "Content-Type" String] ReactionDetails)
+reactionHandler id = do
+  logger <- liftIO initLogger
+  boltCfg <- liftIO loadBoltCfg
+  result <- liftIO . withNeo4j boltCfg $ getReaction id
+  (liftIO . logInfo logger . show) result
+  return $ S.addHeader "application/json" result
+
 server :: S.Server API
-server = healthHandler
+server = healthHandler S.:<|> reactionHandler

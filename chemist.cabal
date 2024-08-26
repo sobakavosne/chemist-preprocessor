@@ -35,11 +35,13 @@ library
   exposed-modules:
     API.Endpoints
     API.Server
-    DataTypes
+    API.Type
+    Domain.Helpers
     Domain.Service
     Helpers
     Infrastructure.Config
     Infrastructure.Database
+    Infrastructure.Type
     Models
 
   hs-source-dirs:   src

@@ -1,19 +1,21 @@
-{-# LANGUAGE DataKinds     #-}
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE DataKinds      #-}
+{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE TypeOperators  #-}
 
 module API.Endpoints
   ( api
   , server
   ) where
 
+import           API.Type                   (HealthCheck (..))
 import           Control.Monad.IO.Class     (MonadIO (liftIO))
 import           Data.Bool                  (bool)
 import qualified Data.ByteString.Char8      as BS
 import qualified Data.ByteString.Lazy.Char8 as LBS
-import           DataTypes                  (HealthCheck (..))
+import           Domain.Service             (getReaction)
 import           Helpers                    (initLogger, logInfo)
 import           Infrastructure.Config      (loadBoltCfg)
-import           Infrastructure.Database    (checkNeo4j, getReaction, withNeo4j)
+import           Infrastructure.Database    (checkNeo4j, withNeo4j)
 import           Models                     (ReactionDetails)
 import           Network.HTTP.Types.Header  (hContentType)
 import           Prelude                    hiding (id)
@@ -30,10 +32,9 @@ healthHandler ::
      S.Handler (S.Headers '[ S.Header "Content-Type" String] HealthCheck)
 healthHandler = do
   logger <- liftIO initLogger
-  boltCfg <- liftIO loadBoltCfg
-  neo4jStatus <- (liftIO . withNeo4j boltCfg) checkNeo4j
+  neo4jStatus <- (liftIO . withNeo4j checkNeo4j) =<< liftIO loadBoltCfg
   let neo4jMessage = bool "Neo4j is down" "Neo4j is alive" neo4jStatus
-  let health = HealthCheck {status = "Server is alive", neo4j = neo4jMessage}
+  let health = HealthCheck {status = "Server is alive", neo4jMessage}
   (liftIO . logInfo logger . show) health
   if neo4jStatus
     then return $ S.addHeader "application/json" health
@@ -48,8 +49,7 @@ reactionHandler ::
   -> S.Handler (S.Headers '[ S.Header "Content-Type" String] ReactionDetails)
 reactionHandler id = do
   logger <- liftIO initLogger
-  boltCfg <- liftIO loadBoltCfg
-  result <- liftIO . withNeo4j boltCfg $ getReaction id
+  result <- liftIO $ getReaction id
   (liftIO . logInfo logger . show) result
   return $ S.addHeader "application/json" result
 

@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE InstanceSigs  #-}
 
-module DataTypes
+module API.Type
   ( HealthCheck(..)
   , ServerConfig(..)
   ) where
@@ -13,7 +13,7 @@ import           GHC.Generics (Generic)
 data HealthCheck =
   HealthCheck
     { status :: String
-    , neo4j  :: String
+    , neo4jMessage  :: String
     }
   deriving (Show, Generic)
 

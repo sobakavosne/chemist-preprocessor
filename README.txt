@@ -2,6 +2,9 @@
 
    • Create .env file from examples/
 
+     NEO4J_HOST=neo4j     -- launching project via Docker 
+     NEO4J_HOST=localhost -- launching project locally
+
    • For Unix-like systems (Linux, macOS, BSD):
 
      > chmod +x run.sh

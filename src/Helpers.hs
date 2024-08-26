@@ -1,42 +1,30 @@
-{-# LANGUAGE FlexibleContexts #-}
-{-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
+{-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Helpers
-  ( exactFields
-  , fromDouble
-  , unrecord
+  ( unrecord
   , initLogger
   , logInfo
   ) where
 
 import           Control.Monad                   (forM)
-import           Control.Monad.Except            (MonadError)
-import           Data.Map                        ((!))
-import           Data.Text                       (Text, pack)
+import           Data.Text                       (Text)
 import           Data.Time                       (getCurrentTime)
 import           Database.Bolt                   (BoltActionT, Record,
-                                                  RecordValue, Structure (..),
-                                                  UnpackError, Value (..), at,
-                                                  exact)
+                                                  RecordValue, at)
 import           System.Log.FastLogger           (LoggerSet,
                                                   ToLogStr (toLogStr),
                                                   defaultBufSize, flushLogStr,
                                                   newStdoutLoggerSet)
 import           System.Log.FastLogger.LoggerSet (pushLogStrLn)
 
-exactFields ::
-     (MonadError UnpackError m, RecordValue a) => Text -> Structure -> m a
-exactFields key s = exact . (\(M m) -> m ! key) =<< (exact . last . fields) s
-
-fromDouble :: Double -> Float
-fromDouble = realToFrac :: Double -> Float
-
+-- | Unpack the list of `result` records with `key`
 unrecord ::
      (Traversable t, Monad m, RecordValue b)
   => t Record
-  -> String
+  -> Text
   -> BoltActionT m (t b)
-unrecord result key = forM result (`at` pack key)
+unrecord result key = forM result (`at` key)
 
 initLogger :: IO LoggerSet
 initLogger = newStdoutLoggerSet defaultBufSize

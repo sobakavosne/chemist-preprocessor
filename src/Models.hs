@@ -23,14 +23,6 @@ import           Database.Bolt (Node, Relationship)
 import           GHC.Generics  (Generic)
 import           Prelude       hiding (id)
 
--- data Interactant
---   = IMolecule Molecule
---   | IReaction Reaction
---   | ICatalyst Catalyst
---   | IPRODUCT_FROM PRODUCT_FROM
---   | IREAGENT_IN REAGENT_IN
---   | IACCELERATE ACCELERATE
---   deriving (Eq, Show, Generic)
 data Molecule =
   Molecule
     { id        :: Int
@@ -108,9 +100,9 @@ instance ToJSON REAGENT_IN
 data ReactionDetails =
   Details
     { reaction         :: Reaction
-    , inboundReagents  :: [(Molecule, REAGENT_IN)]
-    , outboundProducts :: [(Molecule, PRODUCT_FROM)]
-    , conditions       :: [(Catalyst, ACCELERATE)]
+    , inboundReagents  :: [(REAGENT_IN, Molecule)]
+    , outboundProducts :: [(PRODUCT_FROM, Molecule)]
+    , conditions       :: [(ACCELERATE, Catalyst)]
     }
   deriving (Show, Generic)
 

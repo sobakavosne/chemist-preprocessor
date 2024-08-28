@@ -15,6 +15,7 @@ common shared-deps
     , containers
     , data-default
     , dotenv
+    , extra
     , fast-logger
     , hasbolt
     , http-types
@@ -38,10 +39,10 @@ library
     API.Type
     Domain.Helpers
     Domain.Service
+    Domain.Type
     Helpers
     Infrastructure.Config
     Infrastructure.Database
-    Infrastructure.Type
     Models
 
   hs-source-dirs:   src

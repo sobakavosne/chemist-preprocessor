@@ -8,11 +8,14 @@ module API.Endpoints
   ) where
 
 import           API.Type                   (HealthCheck (..))
+import           Control.Monad.Error.Class  (liftEither)
 import           Control.Monad.IO.Class     (MonadIO (liftIO))
 import           Data.Bool                  (bool)
 import qualified Data.ByteString.Char8      as BS
 import qualified Data.ByteString.Lazy.Char8 as LBS
+import           Data.Either.Extra          (mapLeft)
 import           Domain.Service             (getReaction)
+import           Domain.Type                (ParsingError (..))
 import           Helpers                    (initLogger, logInfo)
 import           Infrastructure.Config      (loadBoltCfg)
 import           Infrastructure.Database    (checkNeo4j, withNeo4j)
@@ -27,6 +30,15 @@ type API =
 
 api :: S.Proxy API
 api = S.Proxy
+
+toServerError :: ParsingError -> S.ServerError
+toServerError (ParsingError msg) =
+  S.ServerError
+    { S.errHTTPCode = 400
+    , S.errReasonPhrase = "Bad Request"
+    , S.errBody = LBS.pack $ "Interactants parsing error: " <> show msg
+    , S.errHeaders = []
+    }
 
 healthHandler ::
      S.Handler (S.Headers '[ S.Header "Content-Type" String] HealthCheck)
@@ -49,7 +61,7 @@ reactionHandler ::
   -> S.Handler (S.Headers '[ S.Header "Content-Type" String] ReactionDetails)
 reactionHandler id = do
   logger <- liftIO initLogger
-  result <- liftIO $ getReaction id
+  result <- liftEither $ mapLeft toServerError $ getReaction id
   (liftIO . logInfo logger . show) result
   return $ S.addHeader "application/json" result
 

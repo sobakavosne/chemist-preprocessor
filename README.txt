@@ -27,6 +27,9 @@
    • Reaction example with 3d-metal oxides as catalysts was referenced from an article 
      available on Springer: https://link.springer.com/article/10.1134/S096554412306018X
 
+   • Any reaction has conditions (temperature and pressure) and should be supplied with 
+     a catalyst or an empty catalyst node since the conditions element is a bond
+
 :Future
 
    • For instance, we can create a new relationship to indicate whether or not

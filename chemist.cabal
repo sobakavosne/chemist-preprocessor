@@ -37,12 +37,12 @@ library
     API.Endpoints
     API.Server
     API.Type
-    Domain.Helpers
     Domain.Service
     Domain.Type
     Helpers
     Infrastructure.Config
     Infrastructure.Database
+    Infrastructure.Type
     Models
 
   hs-source-dirs:   src

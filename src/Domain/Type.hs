@@ -14,47 +14,38 @@ module Domain.Type
   , exact
   ) where
 
-import           Control.Exception    (Exception)
-import           Control.Monad        (forM)
-import           Control.Monad.Cont   (MonadIO (liftIO))
-import           Control.Monad.Except (MonadError, throwError)
-import           Data.Map.Strict      (Map, (!?))
-import           Data.Text            (Text, unpack)
-import           Database.Bolt        (Node (..), Path, Relationship (..),
-                                       URelationship, Value (..))
-import           Domain.Helpers       (fromDouble)
-import           Models               (ACCELERATE (..), Catalyst (..),
-                                       Molecule (..), PRODUCT_FROM (..),
-                                       REAGENT_IN (..), RawReactionDetails (..),
-                                       Reaction (..), ReactionDetails (..))
-import           Prelude              hiding (id)
+import           Control.Exception (Exception, throwIO)
+import           Control.Monad     (forM)
+import           Data.Map.Strict   (Map, (!?))
+import           Data.String       (IsString (fromString))
+import           Data.Text         (Text, unpack)
+import           Database.Bolt     (Node (..), Path, Relationship (..),
+                                    URelationship, Value (..))
+import           Models            (ACCELERATE (..), Catalyst (..),
+                                    Molecule (..), PRODUCT_FROM (..),
+                                    REAGENT_IN (..), RawReactionDetails (..),
+                                    Reaction (..), ReactionDetails (..))
+import           Prelude           hiding (id)
 
 data GraphElem
-  = NComponent Node
-  | RComponent Relationship
-  | UComponent URelationship
-  | PComponent Path
+  -- | `Bolt` subjects
+  = NElem Node
+  | RElem Relationship
+  | UElem URelationship
+  | PElem Path
   deriving (Show, Eq)
 
-data Interactant
-  = IMolecule Molecule
-  | IReaction Reaction
-  | ICatalyst Catalyst
-  | IPRODUCT_FROM PRODUCT_FROM
-  | IREAGENT_IN REAGENT_IN
-  | IACCELERATE ACCELERATE
-  deriving (Eq, Show)
-
-data GraphElemIdentifier
+data GraphElemId
+  -- | `Bolt` nodes' identifiers
   = NodeId Int
-  | StartNodeId Int
+  | RelTargetNodeId Int
   deriving (Show)
 
-instance Eq GraphElemIdentifier where
-  (NodeId x) == (NodeId y)           = x == y
-  (StartNodeId x) == (StartNodeId y) = x == y
-  (NodeId x) == (StartNodeId y)      = x == y
-  (StartNodeId x) == (NodeId y)      = x == y
+instance Eq GraphElemId where
+  (NodeId x) == (NodeId y)                   = x == y
+  (RelTargetNodeId x) == (RelTargetNodeId y) = x == y
+  (NodeId x) == (RelTargetNodeId y)          = x == y
+  (RelTargetNodeId x) == (NodeId y)          = x == y
 
 newtype ParsingError =
   ParsingError Text
@@ -64,11 +55,8 @@ instance Show ParsingError where
 
 instance Exception ParsingError
 
-instance MonadIO (Either ParsingError) where
-  liftIO = liftIO
-
-class ValueInteractants a where
-  exactEither :: GraphElem -> Either ParsingError a
+instance IsString ParsingError where
+  fromString = fromString
 
 class FromValue a where
   fromValue :: Value -> Either ParsingError a
@@ -85,11 +73,14 @@ instance FromValue Float where
 instance FromValue a => FromValue [a] where
   fromValue (L l) = mapM fromValue l
 
-exact :: (MonadError ParsingError m, ValueInteractants a) => GraphElem -> m a
-exact = either throwError pure . exactEither
+class ValueInteractants a where
+  exactEither :: GraphElem -> Either ParsingError a
 
-instance ValueInteractants (Molecule, GraphElemIdentifier) where
-  exactEither (NComponent (Node {nodeIdentity, labels, nodeProps}))
+exact :: ValueInteractants a => GraphElem -> IO a
+exact = either (throwIO . userError . show) pure . exactEither
+
+instance ValueInteractants (Molecule, GraphElemId) where
+  exactEither (NElem (Node {nodeIdentity, labels, nodeProps}))
     | "Molecule" `elem` labels = do
       id <- unpackProp "id" nodeProps
       smiles <- unpackProp "smiles" nodeProps
@@ -97,8 +88,8 @@ instance ValueInteractants (Molecule, GraphElemIdentifier) where
       return (Molecule {id, smiles, iupacName}, NodeId nodeIdentity)
     | otherwise = Left $ ParsingError "No 'Molecule' label"
 
-instance ValueInteractants (Catalyst, GraphElemIdentifier) where
-  exactEither (NComponent (Node {nodeIdentity, labels, nodeProps}))
+instance ValueInteractants (Catalyst, GraphElemId) where
+  exactEither (NElem (Node {nodeIdentity, labels, nodeProps}))
     | "Catalyst" `elem` labels = do
       id <- unpackProp "id" nodeProps
       smiles <- unpackProp "smiles" nodeProps
@@ -106,29 +97,29 @@ instance ValueInteractants (Catalyst, GraphElemIdentifier) where
       return (Catalyst {id, smiles, name}, NodeId nodeIdentity)
     | otherwise = Left $ ParsingError "No 'Catalyst' label"
 
-instance ValueInteractants (Reaction, GraphElemIdentifier) where
-  exactEither (NComponent (Node {nodeIdentity, labels, nodeProps}))
+instance ValueInteractants (Reaction, GraphElemId) where
+  exactEither (NElem (Node {nodeIdentity, labels, nodeProps}))
     | "Reaction" `elem` labels = do
       id <- unpackProp "id" nodeProps
       name <- unpackProp "name" nodeProps
       return (Reaction {id, name}, NodeId nodeIdentity)
     | otherwise = Left $ ParsingError "No 'Reaction' label"
 
-instance ValueInteractants (REAGENT_IN, GraphElemIdentifier) where
-  exactEither (RComponent (Relationship {startNodeId, relProps})) = do
+instance ValueInteractants (REAGENT_IN, GraphElemId) where
+  exactEither (RElem (Relationship {startNodeId, relProps})) = do
     amount <- unpackProp "amount" relProps
-    return (REAGENT_IN {amount}, StartNodeId startNodeId)
+    return (REAGENT_IN {amount}, RelTargetNodeId startNodeId)
 
-instance ValueInteractants (PRODUCT_FROM, GraphElemIdentifier) where
-  exactEither (RComponent (Relationship {startNodeId, relProps})) = do
+instance ValueInteractants (PRODUCT_FROM, GraphElemId) where
+  exactEither (RElem (Relationship {endNodeId, relProps})) = do
     amount <- unpackProp "amount" relProps
-    return (PRODUCT_FROM {amount}, StartNodeId startNodeId)
+    return (PRODUCT_FROM {amount}, RelTargetNodeId endNodeId)
 
-instance ValueInteractants (ACCELERATE, GraphElemIdentifier) where
-  exactEither (RComponent (Relationship {startNodeId, relProps})) = do
+instance ValueInteractants (ACCELERATE, GraphElemId) where
+  exactEither (RElem (Relationship {startNodeId, relProps})) = do
     pressure <- unpackProp "pressure" relProps
     temperature <- unpackProp "temperature" relProps
-    return (ACCELERATE {pressure, temperature}, StartNodeId startNodeId)
+    return (ACCELERATE {pressure, temperature}, RelTargetNodeId startNodeId)
 
 unpackProp :: FromValue a => Text -> Map Text Value -> Either ParsingError a
 unpackProp key props =
@@ -137,10 +128,13 @@ unpackProp key props =
     _      -> (Left . ParsingError) ("No key: " <> key)
 
 -- Let's suppose we have a unique values
-direction :: Eq b => [(a, b)] -> [(c, b)] -> [(a, c)]
-direction xs ys = [(x1, y1) | (x1, x2) <- xs, (y1, y2) <- ys, x2 == y2]
+directionOf :: Eq b => [(a, b)] -> [(c, b)] -> [(a, c)]
+directionOf xs ys = [(x1, y1) | (x1, x2) <- xs, (y1, y2) <- ys, x2 == y2]
 
-convert :: MonadError ParsingError m => RawReactionDetails -> m ReactionDetails
+fromDouble :: Double -> Float
+fromDouble = realToFrac :: Double -> Float
+
+convert :: RawReactionDetails -> IO ReactionDetails
 convert RawDetails { reaction
                    , reagents
                    , products
@@ -149,24 +143,17 @@ convert RawDetails { reaction
                    , accelerate
                    , catalysts
                    } = do
-  (reaction' :: (Reaction, GraphElemIdentifier)) <-
-    (exact . NComponent) reaction
-  (reagents' :: [(Molecule, GraphElemIdentifier)]) <-
-    forM reagents (exact . NComponent)
-  (products' :: [(Molecule, GraphElemIdentifier)]) <-
-    forM products (exact . NComponent)
-  (inbound' :: [(REAGENT_IN, GraphElemIdentifier)]) <-
-    forM inbound (exact . RComponent)
-  (outbound' :: [(PRODUCT_FROM, GraphElemIdentifier)]) <-
-    forM outbound (exact . RComponent)
-  (catalysts' :: [(Catalyst, GraphElemIdentifier)]) <-
-    forM catalysts (exact . NComponent)
-  (accelerate' :: [(ACCELERATE, GraphElemIdentifier)]) <-
-    forM accelerate (exact . RComponent)
+  (reaction' :: (Reaction, GraphElemId)) <- (exact . NElem) reaction
+  (reagents' :: [(Molecule, GraphElemId)]) <- forM reagents (exact . NElem)
+  (products' :: [(Molecule, GraphElemId)]) <- forM products (exact . NElem)
+  (inbound' :: [(REAGENT_IN, GraphElemId)]) <- forM inbound (exact . RElem)
+  (outbound' :: [(PRODUCT_FROM, GraphElemId)]) <- forM outbound (exact . RElem)
+  (catalysts' :: [(Catalyst, GraphElemId)]) <- forM catalysts (exact . NElem)
+  (accelerate' :: [(ACCELERATE, GraphElemId)]) <- forM accelerate (exact . RElem)
   return
     Details
       { reaction = fst reaction'
-      , inboundReagents = direction inbound' reagents'
-      , outboundProducts = direction outbound' products'
-      , conditions = direction accelerate' catalysts'
+      , inboundReagents = directionOf inbound' reagents'
+      , outboundProducts = directionOf outbound' products'
+      , conditions = directionOf accelerate' catalysts'
       }

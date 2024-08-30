@@ -8,20 +8,27 @@ module Infrastructure.Database
   , fetchReaction
   ) where
 
-import           Control.Monad.Except   (MonadError (catchError))
-import           Control.Monad.IO.Class (MonadIO)
-import           Data.Text              (pack)
-import           Database.Bolt          (BoltActionT, BoltCfg, BoltError, Node,
-                                         Relationship, Value (I), connect,
-                                         props, query, queryP, run)
-import           Helpers                (unrecord)
-import           Models                 (RawReactionDetails (..))
-import           Prelude                hiding (id)
+import           Control.Exception    (throwIO, try)
+import           Control.Monad.Except (MonadError (catchError),
+                                       MonadTrans (lift))
+import           Data.Text            (pack)
+import           Database.Bolt        (BoltActionT, BoltCfg, BoltError, Node,
+                                       Pipe, Relationship, Value (I), connect,
+                                       props, query, queryP, run)
+import           Helpers              (unrecord)
+import           Infrastructure.Type  (GraphElemError (GraphElemError))
+import           Models               (RawReactionDetails (..))
+import           Prelude              hiding (head, id)
 
-withNeo4j :: MonadIO m => BoltActionT m b -> BoltCfg -> m b
+-- | Safe `head` which throws `GraphElemError` if list is empty
+head :: [a] -> IO a
+head []    = throwIO (GraphElemError "Expected non-empty list")
+head (x:_) = return x
+
+withNeo4j :: BoltActionT IO b -> BoltCfg -> IO b
 withNeo4j action cfg = do
-  pipe <- connect cfg
-  run pipe action
+  pipe <- try (connect cfg) :: IO (Either BoltError Pipe)
+  either throwIO (`run` action) pipe
 
 checkNeo4j :: BoltActionT IO Bool
 checkNeo4j = do
@@ -47,14 +54,13 @@ fetchReaction id = do
              \  COLLECT(DISTINCT product_from) AS product_froms, \
              \  COLLECT(DISTINCT reagent_in) AS reagent_ins"
       (props [("id", I id)])
-  (reaction :: Node) <- head <$> unrecord result "reaction"
-  -- (reaction2 :: Either ParsingError Reaction) <- (lift . runExceptT . exact) . head =<< unrecord result "reaction"
-  (reagents :: [Node]) <- head <$> unrecord result "reagents"
-  (inbound :: [Relationship]) <- head <$> unrecord result "reagent_ins"
-  (products :: [Node]) <- head <$> unrecord result "products"
-  (outbound :: [Relationship]) <- head <$> unrecord result "product_froms"
-  (accelerate :: [Relationship]) <- head <$> unrecord result "accelerates"
-  (catalysts :: [Node]) <- head <$> unrecord result "catalysts"
+  (reaction :: Node) <- (lift . head) =<< unrecord result "reaction"
+  (reagents :: [Node]) <- (lift . head) =<< unrecord result "reagents"
+  (inbound :: [Relationship]) <- (lift . head) =<< unrecord result "reagent_ins"
+  (products :: [Node]) <- (lift . head) =<< unrecord result "products"
+  (outbound :: [Relationship]) <- (lift . head) =<< unrecord result "product_froms"
+  (accelerate :: [Relationship]) <- (lift . head) =<< unrecord result "accelerates"
+  (catalysts :: [Node]) <- (lift . head) =<< unrecord result "catalysts"
   return
     RawDetails
       {reaction, reagents, products, inbound, outbound, accelerate, catalysts}

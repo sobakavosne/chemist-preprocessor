@@ -1,6 +1,7 @@
-{-# LANGUAGE DataKinds      #-}
-{-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE TypeOperators  #-}
+{-# LANGUAGE DataKinds            #-}
+{-# LANGUAGE NamedFieldPuns       #-}
+{-# LANGUAGE TypeOperators        #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 
 module API.Endpoints
   ( api
@@ -8,15 +9,12 @@ module API.Endpoints
   ) where
 
 import           API.Type                   (HealthCheck (..))
-import           Control.Monad.Error.Class  (liftEither)
 import           Control.Monad.IO.Class     (MonadIO (liftIO))
-import           Data.Bool                  (bool)
 import qualified Data.ByteString.Char8      as BS
 import qualified Data.ByteString.Lazy.Char8 as LBS
-import           Data.Either.Extra          (mapLeft)
 import           Domain.Service             (getReaction)
-import           Domain.Type                (ParsingError (..))
-import           Helpers                    (initLogger, logInfo)
+import           Helpers                    (LogLevel (Info), initLogger,
+                                             logWith)
 import           Infrastructure.Config      (loadBoltCfg)
 import           Infrastructure.Database    (checkNeo4j, withNeo4j)
 import           Models                     (ReactionDetails)
@@ -31,29 +29,26 @@ type API =
 api :: S.Proxy API
 api = S.Proxy
 
-toServerError :: ParsingError -> S.ServerError
-toServerError (ParsingError msg) =
-  S.ServerError
-    { S.errHTTPCode = 400
-    , S.errReasonPhrase = "Bad Request"
-    , S.errBody = LBS.pack $ "Interactants parsing error: " <> show msg
-    , S.errHeaders = []
-    }
+contentTypeJson :: String
+contentTypeJson = "application/json"
 
 healthHandler ::
      S.Handler (S.Headers '[ S.Header "Content-Type" String] HealthCheck)
 healthHandler = do
   logger <- liftIO initLogger
-  neo4jStatus <- (liftIO . withNeo4j checkNeo4j) =<< liftIO loadBoltCfg
-  let neo4jMessage = bool "Neo4j is down" "Neo4j is alive" neo4jStatus
+  result <- liftIO . withNeo4j checkNeo4j =<< liftIO loadBoltCfg
+  let neo4jMessage =
+        if result
+          then "Neo4j is alive"
+          else "Neo4j is down"
   let health = HealthCheck {status = "Server is alive", neo4jMessage}
-  (liftIO . logInfo logger . show) health
-  if neo4jStatus
+  (liftIO . logWith Info logger . show) health
+  if result
     then return $ S.addHeader "application/json" health
     else S.throwError
            S.err500
-             { S.errBody = LBS.pack "Neo4j is down"
-             , S.errHeaders = [(hContentType, BS.pack "application/json")]
+             { S.errBody = (LBS.pack . show) health
+             , S.errHeaders = [(hContentType, BS.pack contentTypeJson)]
              }
 
 reactionHandler ::
@@ -61,9 +56,9 @@ reactionHandler ::
   -> S.Handler (S.Headers '[ S.Header "Content-Type" String] ReactionDetails)
 reactionHandler id = do
   logger <- liftIO initLogger
-  result <- liftEither $ mapLeft toServerError $ getReaction id
-  (liftIO . logInfo logger . show) result
-  return $ S.addHeader "application/json" result
+  result <- (liftIO . getReaction) id
+  (liftIO . logWith Info logger . show) result
+  (return . S.addHeader contentTypeJson) result
 
 server :: S.Server API
 server = healthHandler S.:<|> reactionHandler

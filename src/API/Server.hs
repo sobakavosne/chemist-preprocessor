@@ -5,11 +5,11 @@ module API.Server
   ) where
 
 import           API.Endpoints            (api, server)
+import           API.Type                 (ServerConfig (..))
 import           Control.Concurrent       (forkIO, threadDelay)
 import           Control.Monad            (forever)
 import           Data.Default             (Default (def))
 import           Data.Maybe               (fromMaybe)
-import           DataTypes                (ServerConfig (..))
 import           Network.Wai.Handler.Warp (run)
 import           Servant                  (serve)
 import           System.Environment       (lookupEnv)

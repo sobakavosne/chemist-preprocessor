@@ -22,8 +22,8 @@ CALL {
   (hydrogenPeroxideDecomposition)-[:PRODUCT_FROM { amount: 2.0 }]->(water),
   (hydrogenPeroxideDecomposition)-[:PRODUCT_FROM { amount: 1.0 }]->(oxygen),
   
-  (hydrogenPeroxideDecomposition)<-[:ACCELERATE { temperature: [298.15, 373.15] }]-(manganeseDioxide),
-  (hydrogenPeroxideDecomposition)<-[:ACCELERATE { temperature: [298.15, 373.15] }]-(platinum)
+  (hydrogenPeroxideDecomposition)<-[:ACCELERATE { temperature: [298.15, 373.15], pressure: [101.325, 1013.25] }]-(manganeseDioxide),
+  (hydrogenPeroxideDecomposition)<-[:ACCELERATE { temperature: [298.15, 373.15], pressure: [101.325, 1013.25] }]-(platinum)
   
   CREATE (createdMigration:Migration { version: version })
   

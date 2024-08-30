@@ -1,20 +1,26 @@
 {-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE InstanceSigs          #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
+{-# OPTIONS_GHC -Wno-missing-fields #-}
 
-module Domain.Models
+module Models
   ( Molecule(..)
   , Reaction(..)
   , Catalyst(..)
   , PRODUCT_FROM(..)
+  , REAGENT_IN(..)
   , ACCELERATE(..)
   , ReactionDetails(..)
+  , RawReactionDetails(..)
   ) where
 
-import           Data.Aeson   (FromJSON, ToJSON)
+import           Data.Aeson    (FromJSON, ToJSON)
 
-import           Data.Default (Default (def))
-import           GHC.Generics (Generic)
+import           Data.Default  (Default (def))
+import           Database.Bolt (Node, Relationship)
+import           GHC.Generics  (Generic)
+import           Prelude       hiding (id)
 
 data Molecule =
   Molecule
@@ -22,7 +28,7 @@ data Molecule =
     , smiles    :: String
     , iupacName :: String
     }
-  deriving (Show, Generic)
+  deriving (Show, Generic, Eq)
 
 instance FromJSON Molecule
 
@@ -33,7 +39,7 @@ data Reaction =
     { id   :: Int
     , name :: String
     }
-  deriving (Show, Generic)
+  deriving (Show, Generic, Eq)
 
 instance FromJSON Reaction
 
@@ -45,7 +51,7 @@ data Catalyst =
     , smiles :: String
     , name   :: String
     }
-  deriving (Show, Generic)
+  deriving (Show, Generic, Eq)
 
 instance FromJSON Catalyst
 
@@ -55,7 +61,7 @@ newtype PRODUCT_FROM =
   PRODUCT_FROM
     { amount :: Float
     }
-  deriving (Show, Generic)
+  deriving (Show, Generic, Eq)
 
 instance FromJSON PRODUCT_FROM
 
@@ -70,7 +76,7 @@ data ACCELERATE
     { temperature :: [Float]
     , pressure    :: [Float]
     }
-  deriving (Show, Generic)
+  deriving (Show, Generic, Eq)
 
 instance Default ACCELERATE where
   def :: ACCELERATE
@@ -84,23 +90,33 @@ newtype REAGENT_IN =
   REAGENT_IN
     { amount :: Float
     }
-  deriving (Show, Generic)
+  deriving (Show, Generic, Eq)
 
 instance FromJSON REAGENT_IN
 
 instance ToJSON REAGENT_IN
 
 data ReactionDetails =
-  ReactionDetails
-    { reaction   :: Reaction
-    , molecules  :: [Molecule]
-    , inbound    :: [REAGENT_IN]
-    , outbound   :: [PRODUCT_FROM]
-    , accelerate :: [ACCELERATE] -- list of all acceleration options
-    , catalyst   :: Maybe [Catalyst]
+  Details
+    { reaction         :: Reaction
+    , inboundReagents  :: [(REAGENT_IN, Molecule)]
+    , outboundProducts :: [(PRODUCT_FROM, Molecule)]
+    , conditions       :: [(ACCELERATE, Catalyst)]
     }
-  deriving (Show, Generic)
+  deriving (Show, Generic, Eq)
 
 instance FromJSON ReactionDetails
 
 instance ToJSON ReactionDetails
+
+data RawReactionDetails =
+  RawDetails
+    { reaction   :: Node
+    , reagents   :: [Node]
+    , products   :: [Node]
+    , inbound    :: [Relationship]
+    , outbound   :: [Relationship]
+    , accelerate :: [Relationship]
+    , catalysts  :: [Node]
+    }
+  deriving (Show, Eq)

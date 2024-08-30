@@ -13,7 +13,6 @@ module Models
   , ACCELERATE(..)
   , ReactionDetails(..)
   , RawReactionDetails(..)
-  -- , Interactant(..)
   ) where
 
 import           Data.Aeson    (FromJSON, ToJSON)
@@ -104,7 +103,7 @@ data ReactionDetails =
     , outboundProducts :: [(PRODUCT_FROM, Molecule)]
     , conditions       :: [(ACCELERATE, Catalyst)]
     }
-  deriving (Show, Generic)
+  deriving (Show, Generic, Eq)
 
 instance FromJSON ReactionDetails
 

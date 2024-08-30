@@ -2,9 +2,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Helpers
-  ( unrecord
+  ( LogLevel(..)
   , initLogger
-  , logInfo
+  , unrecord
+  , logWith
+  , log
   ) where
 
 import           Control.Monad                   (forM)
@@ -18,6 +20,15 @@ import           System.Log.FastLogger           (LoggerSet,
                                                   newStdoutLoggerSet)
 import           System.Log.FastLogger.LoggerSet (pushLogStrLn)
 
+data LogLevel
+  = Error
+  | Info
+  deriving (Eq)
+
+instance Show LogLevel where
+  show Error = "[Error]"
+  show Info  = "[Info]"
+
 -- | Unpack the list of `result` records with `key`
 unrecord ::
      (Traversable t, Monad m, RecordValue b)
@@ -29,8 +40,9 @@ unrecord result key = forM result (`at` key)
 initLogger :: IO LoggerSet
 initLogger = newStdoutLoggerSet defaultBufSize
 
-logInfo :: LoggerSet -> String -> IO ()
-logInfo logger msg = do
+logWith :: LogLevel -> LoggerSet -> String -> IO ()
+logWith level logger msg = do
   timestamp <- getCurrentTime
-  pushLogStrLn logger . toLogStr $ unwords [show timestamp, "-", msg]
+  (pushLogStrLn logger . toLogStr . unwords)
+    [show timestamp, "-", show level, msg]
   flushLogStr logger

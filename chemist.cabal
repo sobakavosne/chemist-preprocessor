@@ -36,13 +36,12 @@ library
   exposed-modules:
     API.Endpoints
     API.Server
-    API.Type
+    Domain.Converter.Converter
+    Domain.Converter.Type
     Domain.Service
-    Domain.Type
-    Helpers
     Infrastructure.Config
     Infrastructure.Database
-    Infrastructure.Type
+    Infrastructure.QueryGenerator
     Models
 
   hs-source-dirs:   src

@@ -6,24 +6,42 @@ module Infrastructure.Database
   ( withNeo4j
   , checkNeo4j
   , fetchReaction
+  , createReaction
+  , removeReaction
   ) where
 
-import           Control.Exception    (throwIO, try)
-import           Control.Monad.Except (MonadError (catchError),
-                                       MonadTrans (lift))
-import           Data.Text            (pack)
-import           Database.Bolt        (BoltActionT, BoltCfg, BoltError, Node,
-                                       Pipe, Relationship, Value (I), connect,
-                                       props, query, queryP, run)
-import           Helpers              (unrecord)
-import           Infrastructure.Type  (GraphElemError (GraphElemError))
-import           Models               (RawReactionDetails (..))
-import           Prelude              hiding (head, id)
+import           Control.Exception             (Exception, throwIO, try)
+import           Control.Monad.Except          (MonadError (catchError),
+                                                MonadTrans (lift), forM)
+import           Data.Text                     (Text)
+import           Database.Bolt                 (BoltActionT, BoltCfg, BoltError,
+                                                Node, Pipe, Record, RecordValue,
+                                                Relationship, Value (I), at,
+                                                connect, props, query, queryP,
+                                                run)
+import           Infrastructure.QueryGenerator (createReactionQueryFrom)
+import           Models                        (RawReactionDetails (..),
+                                                RawReactionDetailsMask (..))
+import           Prelude                       hiding (head, id)
+
+newtype GraphElemError =
+  GraphElemError Text
+  deriving (Eq, Show)
+
+instance Exception GraphElemError
 
 -- | Safe `head` which throws `GraphElemError` if list is empty
 head :: [a] -> IO a
 head []    = throwIO (GraphElemError "Expected non-empty list")
 head (x:_) = return x
+
+-- | Unpack the list of `result` records with `key`
+unrecord ::
+     (Traversable t, Monad m, RecordValue b)
+  => t Record
+  -> Text
+  -> BoltActionT m (t b)
+unrecord result key = forM result (`at` key)
 
 withNeo4j :: BoltActionT IO b -> BoltCfg -> IO b
 withNeo4j action cfg = do
@@ -32,7 +50,7 @@ withNeo4j action cfg = do
 
 checkNeo4j :: BoltActionT IO Bool
 checkNeo4j = do
-  result <- query (pack "RETURN 1") `catchError` handleException
+  result <- query "RETURN 1" `catchError` handleException
   return $ not (null result)
   where
     handleException :: BoltError -> BoltActionT IO [a]
@@ -54,16 +72,41 @@ fetchReaction id = do
              \  COLLECT(DISTINCT product_from) AS product_froms, \
              \  COLLECT(DISTINCT reagent_in) AS reagent_ins"
       (props [("id", I id)])
-  (reaction :: Node) <- (lift . head) =<< unrecord result "reaction"
-  (reagents :: [Node]) <- (lift . head) =<< unrecord result "reagents"
-  (inbound :: [Relationship]) <- (lift . head) =<< unrecord result "reagent_ins"
-  (products :: [Node]) <- (lift . head) =<< unrecord result "products"
-  (outbound :: [Relationship]) <- (lift . head) =<< unrecord result "product_froms"
-  (accelerate :: [Relationship]) <- (lift . head) =<< unrecord result "accelerates"
-  (catalysts :: [Node]) <- (lift . head) =<< unrecord result "catalysts"
+  (rawReaction   :: Node)           <- (lift . head) =<< unrecord result "reaction"
+  (rawReagents   :: [Node])         <- (lift . head) =<< unrecord result "reagents"
+  (rawInbound    :: [Relationship]) <- (lift . head) =<< unrecord result "reagent_ins"
+  (rawProducts   :: [Node])         <- (lift . head) =<< unrecord result "products"
+  (rawOutbound   :: [Relationship]) <- (lift . head) =<< unrecord result "product_froms"
+  (rawAccelerate :: [Relationship]) <- (lift . head) =<< unrecord result "accelerates"
+  (rawCatalysts  :: [Node])         <- (lift . head) =<< unrecord result "catalysts"
   return
     RawDetails
-      {reaction, reagents, products, inbound, outbound, accelerate, catalysts}
+      { rawReaction
+      , rawReagents
+      , rawProducts
+      , rawInbound
+      , rawOutbound
+      , rawAccelerate
+      , rawCatalysts
+      }
+
+createReaction :: RawReactionDetailsMask -> BoltActionT IO Node
+createReaction details = do
+  result <- query $ createReactionQueryFrom details
+  (rawReaction :: Node) <- (lift . head) =<< unrecord result "reaction"
+  return rawReaction
+
+removeReaction :: Int -> BoltActionT IO ()
+removeReaction id = do
+  _ <-
+    queryP
+      "MATCH \
+             \(reaction:Reaction { id: $id })<-[accelerate:ACCELERATE]-(catalyst:Catalyst), \
+             \(reaction)-[product_from:PRODUCT_FROM]->(product:Molecule), \
+             \(reaction)<-[reagent_in:REAGENT_IN]-(reagent:Molecule) \
+             \DELETE reaction, accelerate, catalyst, product, reagent, product_from, reagent_in"
+      (props [("id", I id)])
+  pure ()
 -- createMolecule :: MonadIO m => Molecule -> BoltActionT m [Record]
 -- createMolecule Molecule {id, smiles, iupacName} = do
 --   let params =

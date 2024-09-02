@@ -1,32 +1,50 @@
 {-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE InstanceSigs          #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
-{-# OPTIONS_GHC -Wno-missing-fields #-}
+{-# LANGUAGE UndecidableInstances  #-}
+{-# OPTIONS_GHC -Wno-orphans #-}
 
 module Models
-  ( Molecule(..)
+  ( RelMask(..)
+  , NodeMask(..)
+  , Molecule(..)
   , Reaction(..)
   , Catalyst(..)
-  , PRODUCT_FROM(..)
   , REAGENT_IN(..)
   , ACCELERATE(..)
+  , PRODUCT_FROM(..)
   , ReactionDetails(..)
   , RawReactionDetails(..)
+  , RawReactionDetailsMask(..)
   ) where
 
 import           Data.Aeson    (FromJSON, ToJSON)
-
 import           Data.Default  (Default (def))
-import           Database.Bolt (Node, Relationship)
+import           Data.Map      (Map)
+import           Data.Text     (Text)
+import           Database.Bolt (Node, Relationship, Value)
 import           GHC.Generics  (Generic)
 import           Prelude       hiding (id)
 
+newtype NodeMask =
+  NodeMask
+    { nodeProperties :: Map Text Value
+    }
+  deriving (Show, Eq)
+
+newtype RelMask =
+  RelMask
+    { relProperties :: Map Text Value
+    }
+  deriving (Show, Eq)
+
 data Molecule =
   Molecule
-    { id        :: Int
-    , smiles    :: String
-    , iupacName :: String
+    { moleculeId        :: Int
+    , moleculeSmiles    :: String
+    , moleculeIupacName :: String
     }
   deriving (Show, Generic, Eq)
 
@@ -36,8 +54,8 @@ instance ToJSON Molecule
 
 data Reaction =
   Reaction
-    { id   :: Int
-    , name :: String
+    { reactionId   :: Int
+    , reactionName :: String
     }
   deriving (Show, Generic, Eq)
 
@@ -47,9 +65,9 @@ instance ToJSON Reaction
 
 data Catalyst =
   Catalyst
-    { id     :: Int
-    , smiles :: String
-    , name   :: String
+    { catalystId     :: Int
+    , catalystSmiles :: String
+    , catalystName   :: String
     }
   deriving (Show, Generic, Eq)
 
@@ -59,7 +77,7 @@ instance ToJSON Catalyst
 
 newtype PRODUCT_FROM =
   PRODUCT_FROM
-    { amount :: Float
+    { productAmount :: Float
     }
   deriving (Show, Generic, Eq)
 
@@ -88,7 +106,7 @@ instance ToJSON ACCELERATE
 
 newtype REAGENT_IN =
   REAGENT_IN
-    { amount :: Float
+    { reagentAmount :: Float
     }
   deriving (Show, Generic, Eq)
 
@@ -111,12 +129,24 @@ instance ToJSON ReactionDetails
 
 data RawReactionDetails =
   RawDetails
-    { reaction   :: Node
-    , reagents   :: [Node]
-    , products   :: [Node]
-    , inbound    :: [Relationship]
-    , outbound   :: [Relationship]
-    , accelerate :: [Relationship]
-    , catalysts  :: [Node]
+    { rawReaction   :: Node
+    , rawReagents   :: [Node]
+    , rawProducts   :: [Node]
+    , rawInbound    :: [Relationship]
+    , rawOutbound   :: [Relationship]
+    , rawAccelerate :: [Relationship]
+    , rawCatalysts  :: [Node]
+    }
+  deriving (Show, Eq)
+
+data RawReactionDetailsMask =
+  RawDetailsMask
+    { rawReactionMask   :: NodeMask
+    , rawReagentsMask   :: [NodeMask]
+    , rawProductsMask   :: [NodeMask]
+    , rawInboundMask    :: [RelMask]
+    , rawOutboundMask   :: [RelMask]
+    , rawAccelerateMask :: [RelMask]
+    , rawCatalystsMask  :: [NodeMask]
     }
   deriving (Show, Eq)

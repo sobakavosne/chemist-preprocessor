@@ -17,8 +17,8 @@ getReaction id = toDetails =<< withNeo4j (fetchReaction id) =<< loadBoltCfg
 
 postReaction :: ReactionDetails -> IO Reaction
 postReaction details = do
-  rawDetails <- toRawDetails details
-  toReaction =<< withNeo4j (createReaction rawDetails) =<< loadBoltCfg
+  rawDetailsMask <- toRawDetails details
+  toReaction =<< withNeo4j (createReaction rawDetailsMask) =<< loadBoltCfg
 
 deleteReaction :: Int -> IO ()
 deleteReaction id = withNeo4j (removeReaction id) =<< loadBoltCfg

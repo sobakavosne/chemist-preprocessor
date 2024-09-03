@@ -8,6 +8,7 @@
 
 module Models
   ( RelMask(..)
+  , PathMask(..)
   , NodeMask(..)
   , Molecule(..)
   , Reaction(..)
@@ -30,13 +31,29 @@ import           Prelude       hiding (id)
 
 newtype NodeMask =
   NodeMask
-    { nodeProperties :: Map Text Value
+    { nodePropsMask :: Map Text Value
     }
   deriving (Show, Eq)
 
 newtype RelMask =
   RelMask
-    { relProperties :: Map Text Value
+    { relPropsMask :: Map Text Value
+    }
+  deriving (Show, Eq)
+
+data URelationshipMask =
+  URelationshipMask
+    { urelIdentityMask :: Int
+    , urelTypeMask     :: Text
+    , urelPropsMask    :: Map Text Value
+    }
+  deriving (Show, Eq)
+
+data PathMask =
+  PathMask
+    { pathNodesMask         :: [NodeMask]
+    , pathRelationshipsMask :: [URelationshipMask]
+    , pathSequenceMask      :: [Int]
     }
   deriving (Show, Eq)
 

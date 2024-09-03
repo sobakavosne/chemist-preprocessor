@@ -38,6 +38,10 @@ library
     API.Server
     Domain.Converter.Converter
     Domain.Converter.Type
+    Domain.Converter.Units.ToDetails
+    Domain.Converter.Units.ToPath
+    Domain.Converter.Units.ToRawDetails
+    Domain.Converter.Units.ToReaction
     Domain.Service
     Infrastructure.Config
     Infrastructure.Database

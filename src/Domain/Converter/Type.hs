@@ -14,16 +14,18 @@ module Domain.Converter.Type
   ) where
 
 import           Control.Exception (Exception, throwIO)
+import           Control.Monad     (forM)
 import           Data.Map.Strict   (Map, (!?))
 import           Data.String       (IsString (fromString))
 import           Data.Text         (Text, unpack)
 import           Database.Bolt     (IsValue (toValue, toValueList), Node (..),
-                                    Path, Relationship (..), URelationship,
+                                    Path (..), Relationship (..), URelationship,
                                     Value (..), props)
 import           Models            (ACCELERATE (..), Catalyst (..),
                                     Molecule (..), NodeMask (..),
-                                    PRODUCT_FROM (..), REAGENT_IN (..),
-                                    Reaction (..), RelMask (..))
+                                    PRODUCT_FROM (..), PathMask (..),
+                                    REAGENT_IN (..), Reaction (..),
+                                    RelMask (..))
 import           Prelude           hiding (id)
 
 data Elem
@@ -133,6 +135,14 @@ instance ElemInteractant (ACCELERATE, Identity) where
     temperature <- unpackProp "temperature" relProps
     return (ACCELERATE {pressure, temperature}, RelTargetNodeId startNodeId)
 
+instance ElemInteractant PathMask where
+  exactInteractant (EPath (Path {pathNodes, pathRelationships, pathSequence})) = do
+    pathNodesMask <- forM (exact . ENode) pathNodes
+    pathRelationshipsMask <- forM (exact . ERel) pathRelationships
+    return
+      (PathMask
+         {pathNodesMask, pathRelationshipsMask, pathSequenceMask = pathSequence})
+
 class InteractantElem a where
   exactElem :: Interactant -> Either ParsingError a
 
@@ -145,7 +155,7 @@ instance InteractantElem RelMask where
       IAccelerate (ACCELERATE {pressure, temperature}) -> do
         return
           RelMask
-            { relProperties =
+            { relPropsMask =
                 props
                   [ ("pressure", toValueList pressure)
                   , ("temperature", toValueList temperature)
@@ -153,10 +163,10 @@ instance InteractantElem RelMask where
             }
       IProductFrom (PRODUCT_FROM {productAmount}) -> do
         return
-          RelMask {relProperties = props [("amount", toValue productAmount)]}
+          RelMask {relPropsMask = props [("amount", toValue productAmount)]}
       IReagentIn (REAGENT_IN {reagentAmount}) -> do
         return
-          RelMask {relProperties = props [("amount", toValue reagentAmount)]}
+          RelMask {relPropsMask = props [("amount", toValue reagentAmount)]}
 
 instance InteractantElem NodeMask where
   exactElem interactant =
@@ -164,7 +174,7 @@ instance InteractantElem NodeMask where
       ICatalyst (Catalyst {catalystId, catalystSmiles, catalystName}) -> do
         return
           NodeMask
-            { nodeProperties =
+            { nodePropsMask =
                 props
                   [ ("id", toValue catalystId)
                   , ("smiles", toValue catalystSmiles)
@@ -174,7 +184,7 @@ instance InteractantElem NodeMask where
       IMolecule (Molecule {moleculeId, moleculeSmiles, moleculeIupacName}) -> do
         return
           NodeMask
-            { nodeProperties =
+            { nodePropsMask =
                 props
                   [ ("id", toValue moleculeId)
                   , ("smiles", toValue moleculeSmiles)
@@ -184,7 +194,7 @@ instance InteractantElem NodeMask where
       IReaction (Reaction {reactionId, reactionName}) -> do
         return
           NodeMask
-            { nodeProperties =
+            { nodePropsMask =
                 props
                   [("id", toValue reactionId), ("name", toValue reactionName)]
             }

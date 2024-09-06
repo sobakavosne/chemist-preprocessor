@@ -6,26 +6,24 @@
 module Domain.Converter.Type
   ( Interactant(..)
   , Identity(..)
-  , NodeMask(..)
-  , RelMask(..)
   , Elem(..)
   , exactRaw
   , exact
   ) where
 
-import           Control.Exception (Exception, throwIO)
+import           Control.Exception (Exception, throw, throwIO)
 import           Control.Monad     (forM)
 import           Data.Map.Strict   (Map, (!?))
-import           Data.String       (IsString (fromString))
-import           Data.Text         (Text, unpack)
+import           Data.Text         (Text, pack, unpack)
 import           Database.Bolt     (IsValue (toValue, toValueList), Node (..),
-                                    Path (..), Relationship (..), URelationship,
-                                    Value (..), props)
+                                    Path (..), Relationship (..),
+                                    URelationship (..), Value (..), props)
 import           Models            (ACCELERATE (..), Catalyst (..),
-                                    Molecule (..), NodeMask (..),
-                                    PRODUCT_FROM (..), PathMask (..),
-                                    REAGENT_IN (..), Reaction (..),
-                                    RelMask (..))
+                                    Interactant (..), Molecule (..),
+                                    NodeMask (..), PRODUCT_FROM (..),
+                                    PathMask (..), REAGENT_IN (..),
+                                    Reaction (..), RelMask (..))
+import           Numeric.Extra     (doubleToFloat)
 import           Prelude           hiding (id)
 
 data Elem
@@ -37,19 +35,11 @@ data Elem
   deriving (Show, Eq)
 
 data Identity
-  -- | `Bolt` nodes' identifiers
+  -- | `Bolt` elements identifiers
   = NodeId Int
+  | URelId Int
   | RelTargetNodeId Int
   deriving (Show)
-
-data Interactant
-  = IAccelerate ACCELERATE
-  | ICatalyst Catalyst
-  | IMolecule Molecule
-  | IProductFrom PRODUCT_FROM
-  | IReagentIn REAGENT_IN
-  | IReaction Reaction
-  deriving (Show, Eq)
 
 instance Eq Identity where
   (NodeId x) == (NodeId y)                   = x == y
@@ -61,12 +51,9 @@ newtype ParsingError =
   ParsingError Text
 
 instance Show ParsingError where
-  show (ParsingError msg) = "Interactants parsing error: " <> show msg
+  show (ParsingError msg) = "Parsing error: " <> show msg
 
 instance Exception ParsingError
-
-instance IsString ParsingError where
-  fromString = fromString
 
 class FromValue a where
   fromValue :: Value -> Either ParsingError a
@@ -78,7 +65,7 @@ instance {-# OVERLAPPING #-} FromValue String where
   fromValue (T t) = (Right . unpack) t
 
 instance FromValue Float where
-  fromValue (F d) = (Right . fromDouble) d
+  fromValue (F d) = Right (doubleToFloat d)
 
 instance FromValue a => FromValue [a] where
   fromValue (L l) = mapM fromValue l
@@ -87,7 +74,7 @@ class ElemInteractant a where
   exactInteractant :: Elem -> Either ParsingError a
 
 exact :: ElemInteractant a => Elem -> IO a
-exact = either (throwIO . userError . show) pure . exactInteractant
+exact = either throwIO pure . exactInteractant
 
 instance ElemInteractant (Molecule, Identity) where
   exactInteractant (ENode (Node {nodeIdentity, labels, nodeProps}))
@@ -98,7 +85,7 @@ instance ElemInteractant (Molecule, Identity) where
       return
         ( Molecule {moleculeId, moleculeSmiles, moleculeIupacName}
         , NodeId nodeIdentity)
-    | otherwise = Left $ ParsingError "No 'Molecule' label"
+    | otherwise = throw $ ParsingError "No 'Molecule' label"
 
 instance ElemInteractant (Catalyst, Identity) where
   exactInteractant (ENode (Node {nodeIdentity, labels, nodeProps}))
@@ -109,7 +96,7 @@ instance ElemInteractant (Catalyst, Identity) where
       return
         ( Catalyst {catalystId, catalystSmiles, catalystName}
         , NodeId nodeIdentity)
-    | otherwise = Left $ ParsingError "No 'Catalyst' label"
+    | otherwise = throw $ ParsingError "No 'Catalyst' label"
 
 instance ElemInteractant (Reaction, Identity) where
   exactInteractant (ENode (Node {nodeIdentity, labels, nodeProps}))
@@ -117,28 +104,70 @@ instance ElemInteractant (Reaction, Identity) where
       reactionId <- unpackProp "id" nodeProps
       reactionName <- unpackProp "name" nodeProps
       return (Reaction {reactionId, reactionName}, NodeId nodeIdentity)
-    | otherwise = Left $ ParsingError "No 'Reaction' label"
+    | otherwise = throw $ ParsingError "No 'Reaction' label"
 
 instance ElemInteractant (REAGENT_IN, Identity) where
   exactInteractant (ERel (Relationship {startNodeId, relProps})) = do
     reagentAmount <- unpackProp "amount" relProps
     return (REAGENT_IN {reagentAmount}, RelTargetNodeId startNodeId)
+  exactInteractant (EURel (URelationship {urelIdentity, urelProps})) = do
+    reagentAmount <- unpackProp "amount" urelProps
+    return (REAGENT_IN {reagentAmount}, URelId urelIdentity)
 
 instance ElemInteractant (PRODUCT_FROM, Identity) where
   exactInteractant (ERel (Relationship {endNodeId, relProps})) = do
     productAmount <- unpackProp "amount" relProps
     return (PRODUCT_FROM {productAmount}, RelTargetNodeId endNodeId)
+  exactInteractant (EURel (URelationship {urelIdentity, urelProps})) = do
+    productAmount <- unpackProp "amount" urelProps
+    return (PRODUCT_FROM {productAmount}, URelId urelIdentity)
 
 instance ElemInteractant (ACCELERATE, Identity) where
   exactInteractant (ERel (Relationship {startNodeId, relProps})) = do
     pressure <- unpackProp "pressure" relProps
     temperature <- unpackProp "temperature" relProps
     return (ACCELERATE {pressure, temperature}, RelTargetNodeId startNodeId)
+  exactInteractant (EURel (URelationship {urelIdentity, urelProps})) = do
+    pressure <- unpackProp "pressure" urelProps
+    temperature <- unpackProp "temperature" urelProps
+    return (ACCELERATE {pressure, temperature}, URelId urelIdentity)
 
+instance ElemInteractant Interactant where
+  exactInteractant element@(ENode (Node {labels})) = do
+    case labels of
+      ["Molecule"] ->
+        IMolecule . fst <$>
+        (exactInteractant element :: Either ParsingError (Molecule, Identity))
+      ["Catalyst"] ->
+        ICatalyst . fst <$>
+        (exactInteractant element :: Either ParsingError (Catalyst, Identity))
+      ["Reaction"] ->
+        IReaction . fst <$>
+        (exactInteractant element :: Either ParsingError (Reaction, Identity))
+      _ ->
+        (throw . ParsingError . pack)
+          ("Unrecognized Node labels: " ++ show labels)
+  exactInteractant element@(EURel (URelationship {urelType})) = do
+    case urelType of
+      "ACCELERATE" ->
+        IAccelerate . fst <$>
+        (exactInteractant element :: Either ParsingError (ACCELERATE, Identity))
+      "REAGENT_IN" ->
+        IReagentIn . fst <$>
+        (exactInteractant element :: Either ParsingError (REAGENT_IN, Identity))
+      "PRODUCT_FROM" ->
+        IProductFrom . fst <$>
+        (exactInteractant element :: Either ParsingError ( PRODUCT_FROM
+                                                         , Identity))
+      _ ->
+        (throw . ParsingError . pack)
+          ("Unrecognized URelationship type: " ++ show urelType)
+
+-- Introduce PathMask instance to avoid introducing a new typeclass for a pseudo-collection of Interactants
 instance ElemInteractant PathMask where
   exactInteractant (EPath (Path {pathNodes, pathRelationships, pathSequence})) = do
-    pathNodesMask <- forM (exact . ENode) pathNodes
-    pathRelationshipsMask <- forM (exact . ERel) pathRelationships
+    pathNodesMask <- forM pathNodes (exactInteractant . ENode)
+    pathRelationshipsMask <- forM pathRelationships (exactInteractant . EURel)
     return
       (PathMask
          {pathNodesMask, pathRelationshipsMask, pathSequenceMask = pathSequence})
@@ -147,7 +176,7 @@ class InteractantElem a where
   exactElem :: Interactant -> Either ParsingError a
 
 exactRaw :: InteractantElem a => Interactant -> IO a
-exactRaw = either (throwIO . userError . show) pure . exactElem
+exactRaw = either throwIO pure . exactElem
 
 instance InteractantElem RelMask where
   exactElem interactant =
@@ -167,6 +196,9 @@ instance InteractantElem RelMask where
       IReagentIn (REAGENT_IN {reagentAmount}) -> do
         return
           RelMask {relPropsMask = props [("amount", toValue reagentAmount)]}
+      r ->
+        (throw . ParsingError . pack)
+          ("Unrecognized 'relation' Interactant: " ++ show r)
 
 instance InteractantElem NodeMask where
   exactElem interactant =
@@ -198,12 +230,12 @@ instance InteractantElem NodeMask where
                 props
                   [("id", toValue reactionId), ("name", toValue reactionName)]
             }
+      n ->
+        (throw . ParsingError . pack)
+          ("Unrecognized 'node' Interactant: " ++ show n)
 
 unpackProp :: FromValue a => Text -> Map Text Value -> Either ParsingError a
 unpackProp key properties =
   case properties !? key of
     Just x -> fromValue x
-    _      -> (Left . ParsingError) ("No key: " <> key)
-
-fromDouble :: Double -> Float
-fromDouble = realToFrac
+    _      -> throw $ ParsingError ("Missing the key: " <> key)

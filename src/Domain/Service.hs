@@ -1,15 +1,18 @@
 module Domain.Service
-  ( getReaction
+  ( getPath
+  , getReaction
   , postReaction
   , deleteReaction
   ) where
 
-import           Domain.Converter.Converter (toDetails, toRawDetails,
+import           Domain.Converter.Converter (toDetails, toPath, toRawDetails,
                                              toReaction)
 import           Infrastructure.Config      (loadBoltCfg)
 import           Infrastructure.Database    (createReaction, fetchReaction,
-                                             removeReaction, withNeo4j)
-import           Models                     (Reaction, ReactionDetails)
+                                             findPath, removeReaction,
+                                             withNeo4j)
+import           Models                     (PathMask, Reaction,
+                                             ReactionDetails)
 import           Prelude                    hiding (id)
 
 getReaction :: Int -> IO ReactionDetails
@@ -22,3 +25,6 @@ postReaction details = do
 
 deleteReaction :: Int -> IO ()
 deleteReaction id = withNeo4j (removeReaction id) =<< loadBoltCfg
+
+getPath :: Int -> Int -> IO PathMask
+getPath start end = toPath =<< withNeo4j (findPath start end) =<< loadBoltCfg

@@ -14,12 +14,13 @@ import           Data.Aeson                      (FromJSON, ToJSON)
 import qualified Data.ByteString.Char8           as BS
 import qualified Data.ByteString.Lazy.Char8      as LBS
 import           Data.Time                       (getCurrentTime)
-import           Domain.Service                  (deleteReaction, getReaction,
-                                                  postReaction)
+import           Domain.Service                  (deleteReaction, getPath,
+                                                  getReaction, postReaction)
 import           GHC.Generics                    (Generic)
 import           Infrastructure.Config           (loadBoltCfg)
 import           Infrastructure.Database         (checkNeo4j, withNeo4j)
-import           Models                          (Reaction, ReactionDetails)
+import           Models                          (PathMask, Reaction,
+                                                  ReactionDetails)
 import           Network.HTTP.Types.Header       (hContentType)
 import           Prelude                         hiding (id)
 import qualified Servant                         as S
@@ -63,7 +64,8 @@ type API =
   "health" S.:> S.Get '[ S.JSON] (S.Headers '[ S.Header "Content-Type" String] HealthCheck) S.:<|>
   "reaction" S.:> S.Capture "id" Int S.:> S.Get '[ S.JSON] (S.Headers '[ S.Header "Content-Type" String] ReactionDetails) S.:<|>
   "reaction" S.:> S.ReqBody '[ S.JSON] ReactionDetails S.:> S.Post '[ S.JSON] (S.Headers '[ S.Header "Content-Type" String] Reaction) S.:<|>
-  "reaction" S.:> S.Capture "id" Int S.:> S.DeleteNoContent
+  "reaction" S.:> S.Capture "id" Int S.:> S.DeleteNoContent S.:<|>
+  "path" S.:> S.Capture "start" Int S.:> S.Capture "end" Int S.:> S.Get '[S.JSON] (S.Headers '[S.Header "Content-Type" String] PathMask)
 
 api :: S.Proxy API
 api = S.Proxy
@@ -115,7 +117,18 @@ deleteReactionHandler id = do
   liftIO . logWith Info logger $ "Reaction with ID " ++ show id ++ " deleted."
   return S.NoContent
 
+getPathHandler ::
+     Int
+  -> Int
+  -> S.Handler (S.Headers '[ S.Header "Content-Type" String] PathMask)
+getPathHandler start end = do
+  logger <- liftIO initLogger
+  result <- liftIO $ getPath start end
+  (liftIO . logWith Info logger . show) result
+  (return . S.addHeader contentTypeJson) result
+
 server :: S.Server API
 server =
   healthHandler S.:<|> getReactionHandler S.:<|> postReactionHandler S.:<|>
-  deleteReactionHandler
+  deleteReactionHandler S.:<|>
+  getPathHandler

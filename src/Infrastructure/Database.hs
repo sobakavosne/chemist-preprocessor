@@ -24,7 +24,6 @@ import           Infrastructure.QueryGenerator (createReactionQueryFrom)
 import           Models                        (RawReactionDetails (..),
                                                 RawReactionDetailsMask (..))
 import           Prelude                       hiding (head, id)
-import Debug.Trace (trace)
 
 newtype GraphElemError =
   GraphElemError Text
@@ -120,9 +119,7 @@ findPath startId endId = do
              \ -(end:Reaction {id: $end}))\
              \RETURN path"
       (props [("start", I startId), ("end", I endId)])
-  trace (show result) pure ()
   (rawPath :: Path) <- (lift . head) =<< unrecord result "path"
-  trace (show rawPath) pure ()
   return rawPath
 -- createMolecule :: MonadIO m => Molecule -> BoltActionT m [Record]
 -- createMolecule Molecule {id, smiles, iupacName} = do

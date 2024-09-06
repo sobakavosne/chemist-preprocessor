@@ -1,10 +1,8 @@
-{-# LANGUAGE ScopedTypeVariables #-}
-
 module Domain.Converter.Converter
   ( toRawDetails
   , toReaction
-  , toPath
   , toDetails
+  , toPath
   ) where
 
 import           Domain.Converter.Units.ToDetails    (toDetails)

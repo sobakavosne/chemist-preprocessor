@@ -27,13 +27,13 @@ toDetails RawDetails { rawReaction
                      , rawAccelerate
                      , rawCatalysts
                      } = do
-  (reaction' :: (Reaction, Identity)) <- (exact . ENode) rawReaction
-  (reagents' :: [(Molecule, Identity)]) <- forM rawReagents (exact . ENode)
-  (products' :: [(Molecule, Identity)]) <- forM rawProducts (exact . ENode)
-  (inbound' :: [(REAGENT_IN, Identity)]) <- forM rawInbound (exact . ERel)
-  (outbound' :: [(PRODUCT_FROM, Identity)]) <- forM rawOutbound (exact . ERel)
-  (catalysts' :: [(Catalyst, Identity)]) <- forM rawCatalysts (exact . ENode)
-  (accelerate' :: [(ACCELERATE, Identity)]) <- forM rawAccelerate (exact . ERel)
+  (reaction'   :: (Reaction, Identity))       <- (exact . ENode) rawReaction
+  (reagents'   :: [(Molecule, Identity)])     <- forM rawReagents (exact . ENode)
+  (products'   :: [(Molecule, Identity)])     <- forM rawProducts (exact . ENode)
+  (inbound'    :: [(REAGENT_IN, Identity)])   <- forM rawInbound (exact . ERel)
+  (outbound'   :: [(PRODUCT_FROM, Identity)]) <- forM rawOutbound (exact . ERel)
+  (catalysts'  :: [(Catalyst, Identity)])     <- forM rawCatalysts (exact . ENode)
+  (accelerate' :: [(ACCELERATE, Identity)])   <- forM rawAccelerate (exact . ERel)
   return
     Details
       { reaction = fst reaction'

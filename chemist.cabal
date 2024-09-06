@@ -18,6 +18,7 @@ common shared-deps
     , extra
     , fast-logger
     , hasbolt
+    , hspec
     , http-types
     , mtl
     , servant-server
@@ -38,6 +39,14 @@ library
     API.Server
     Domain.Converter.Converter
     Domain.Converter.Type
+    Domain.Converter.Units.ToDetails
+    Domain.Converter.Units.ToDetailsSpec
+    Domain.Converter.Units.ToPath
+    Domain.Converter.Units.ToPathSpec
+    Domain.Converter.Units.ToReactionSpec
+    Domain.Converter.Units.ToRawDetails
+    Domain.Converter.Units.ToRawDetailsSpec
+    Domain.Converter.Units.ToReaction
     Domain.Service
     Infrastructure.Config
     Infrastructure.Database

@@ -8,10 +8,12 @@
 
 module Models
   ( RelMask(..)
+  , PathMask(..)
   , NodeMask(..)
   , Molecule(..)
   , Reaction(..)
   , Catalyst(..)
+  , Interactant(..)
   , REAGENT_IN(..)
   , ACCELERATE(..)
   , PRODUCT_FROM(..)
@@ -28,17 +30,42 @@ import           Database.Bolt (Node, Relationship, Value)
 import           GHC.Generics  (Generic)
 import           Prelude       hiding (id)
 
+data Interactant
+  = IAccelerate ACCELERATE
+  | ICatalyst Catalyst
+  | IMolecule Molecule
+  | IProductFrom PRODUCT_FROM
+  | IReagentIn REAGENT_IN
+  | IReaction Reaction
+  deriving (Show, Eq, Generic)
+
+instance ToJSON Interactant
+
+instance FromJSON Interactant
+
 newtype NodeMask =
   NodeMask
-    { nodeProperties :: Map Text Value
+    { nodePropsMask :: Map Text Value
     }
   deriving (Show, Eq)
 
 newtype RelMask =
   RelMask
-    { relProperties :: Map Text Value
+    { relPropsMask :: Map Text Value
     }
   deriving (Show, Eq)
+
+data PathMask =
+  PathMask
+    { pathNodesMask         :: [Interactant]
+    , pathRelationshipsMask :: [Interactant]
+    , pathSequenceMask      :: [Int]
+    }
+  deriving (Show, Eq, Generic)
+
+instance ToJSON PathMask
+
+instance FromJSON PathMask
 
 data Molecule =
   Molecule

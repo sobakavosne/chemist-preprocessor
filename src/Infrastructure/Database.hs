@@ -3,7 +3,8 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Infrastructure.Database
-  ( withNeo4j
+  ( findPath
+  , withNeo4j
   , checkNeo4j
   , fetchReaction
   , createReaction
@@ -15,10 +16,10 @@ import           Control.Monad.Except          (MonadError (catchError),
                                                 MonadTrans (lift), forM)
 import           Data.Text                     (Text)
 import           Database.Bolt                 (BoltActionT, BoltCfg, BoltError,
-                                                Node, Pipe, Record, RecordValue,
-                                                Relationship, Value (I), at,
-                                                connect, props, query, queryP,
-                                                run)
+                                                Node, Path, Pipe, Record,
+                                                RecordValue, Relationship,
+                                                Value (I), at, connect, props,
+                                                query, queryP, run)
 import           Infrastructure.QueryGenerator (createReactionQueryFrom)
 import           Models                        (RawReactionDetails (..),
                                                 RawReactionDetailsMask (..))
@@ -107,6 +108,19 @@ removeReaction id = do
              \DELETE reaction, accelerate, catalyst, product, reagent, product_from, reagent_in"
       (props [("id", I id)])
   pure ()
+
+findPath :: Int -> Int -> BoltActionT IO Path
+findPath startId endId = do
+  result <-
+    queryP
+      "MATCH \
+             \path = shortestPath((start:Reaction {id: $start})\
+             \ -[:PRODUCT_FROM|REAGENT_IN*]\
+             \ -(end:Reaction {id: $end}))\
+             \RETURN path"
+      (props [("start", I startId), ("end", I endId)])
+  (rawPath :: Path) <- (lift . head) =<< unrecord result "path"
+  return rawPath
 -- createMolecule :: MonadIO m => Molecule -> BoltActionT m [Record]
 -- createMolecule Molecule {id, smiles, iupacName} = do
 --   let params =

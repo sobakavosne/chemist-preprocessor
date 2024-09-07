@@ -43,10 +43,10 @@ library
     Domain.Converter.Units.ToDetailsSpec
     Domain.Converter.Units.ToPath
     Domain.Converter.Units.ToPathSpec
-    Domain.Converter.Units.ToReactionSpec
     Domain.Converter.Units.ToRawDetails
     Domain.Converter.Units.ToRawDetailsSpec
     Domain.Converter.Units.ToReaction
+    Domain.Converter.Units.ToReactionSpec
     Domain.Service
     Infrastructure.Config
     Infrastructure.Database

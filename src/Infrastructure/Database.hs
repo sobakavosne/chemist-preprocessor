@@ -11,15 +11,15 @@ module Infrastructure.Database
   , removeReaction
   ) where
 
-import           Control.Exception             (Exception, throwIO, try)
+import           Control.Exception             (Exception, bracket, throwIO)
 import           Control.Monad.Except          (MonadError (catchError),
                                                 MonadTrans (lift), forM)
 import           Data.Text                     (Text)
 import           Database.Bolt                 (BoltActionT, BoltCfg, BoltError,
-                                                Node, Path, Pipe, Record,
-                                                RecordValue, Relationship,
-                                                Value (I), at, connect, props,
-                                                query, queryP, run)
+                                                Node, Path, Record, RecordValue,
+                                                Relationship, Value (I), at,
+                                                close, connect, props, query,
+                                                queryP, run)
 import           Infrastructure.QueryGenerator (createReactionQueryFrom)
 import           Models                        (RawReactionDetails (..),
                                                 RawReactionDetailsMask (..))
@@ -45,9 +45,7 @@ unrecord ::
 unrecord result key = forM result (`at` key)
 
 withNeo4j :: BoltActionT IO b -> BoltCfg -> IO b
-withNeo4j action cfg = do
-  pipe <- try (connect cfg) :: IO (Either BoltError Pipe)
-  either throwIO (`run` action) pipe
+withNeo4j action cfg = bracket (connect cfg) close (`run` action)
 
 checkNeo4j :: BoltActionT IO Bool
 checkNeo4j = do
@@ -121,23 +119,3 @@ findPath startId endId = do
       (props [("start", I startId), ("end", I endId)])
   (rawPath :: Path) <- (lift . head) =<< unrecord result "path"
   return rawPath
--- createMolecule :: MonadIO m => Molecule -> BoltActionT m [Record]
--- createMolecule Molecule {id, smiles, iupacName} = do
---   let params =
---         fromList
---           [ ("id", I id)
---           , ("smiles", T (pack smiles))
---           , ("iupacName", T (pack iupacName))
---           ]
---   queryP
---     "CREATE (m:Molecule {id: {id}, smiles: {smiles}, iupacName: {iupacName}})"
---     params
---
--- createMolecule :: MonadIO m => Molecule -> BoltActionT m [Record]
--- createMolecule Molecule {id, smiles, iupacName} = do
---   let query = toCypher $ do
---                 createF
---                   [ PS $ p $ #m .& lbl @Molecule .& prop (#id =: id, #smiles =: pack smiles, #iupacName =: pack iupacName)
---                   ]
---                 returnF ["m"]
---   queryP query empty

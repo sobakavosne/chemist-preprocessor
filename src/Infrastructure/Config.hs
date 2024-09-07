@@ -15,20 +15,7 @@ import           System.Environment (lookupEnv)
 loadBoltCfg :: IO BoltCfg
 loadBoltCfg = do
   user <- pack . fromMaybe (unpack $ user def) <$> lookupEnv "NEO4J_USER"
-  pwd <- pack . fromMaybe (unpack $ password def) <$> lookupEnv "NEO4J_PASSWORD"
+  password <- pack . fromMaybe (unpack $ password def) <$> lookupEnv "NEO4J_PASSWORD"
   host <- fromMaybe (host def) <$> lookupEnv "NEO4J_HOST"
   port <- read . fromMaybe (show $ port def) <$> lookupEnv "NEO4J_BOLT_PORT"
-  return
-    BoltCfg
-      { user
-      , password = pwd
-      , host
-      , port
-      , socketTimeout = socketTimeout def
-      , magic = magic def
-      , version = version def
-      , userAgent = userAgent def
-      , maxChunkSize = maxChunkSize def
-      , authType = authType def
-      , secure = secure def
-      }
+  return def {user, password, host, port}

@@ -9,6 +9,7 @@ module Infrastructure.Database
   , fetchReaction
   , createReaction
   , removeReaction
+  , fetchMechanism
   ) where
 
 import           Control.Exception             (Exception, bracket, throwIO)
@@ -21,7 +22,8 @@ import           Database.Bolt                 (BoltActionT, BoltCfg, BoltError,
                                                 close, connect, props, query,
                                                 queryP, run)
 import           Infrastructure.QueryGenerator (createReactionQueryFrom)
-import           Models                        (RawReactionDetails (..),
+import           Models                        (RawMechanismDetails (..),
+                                                RawReactionDetails (..),
                                                 RawReactionDetailsMask (..))
 import           Prelude                       hiding (head, id)
 
@@ -79,7 +81,7 @@ fetchReaction id = do
   (rawAccelerate :: [Relationship]) <- (lift . head) =<< unrecord result "accelerates"
   (rawCatalysts  :: [Node])         <- (lift . head) =<< unrecord result "catalysts"
   return
-    RawDetails
+    RawReactionDetails
       { rawReaction
       , rawReagents
       , rawProducts
@@ -119,3 +121,32 @@ findPath startId endId = do
       (props [("start", I startId), ("end", I endId)])
   (rawPath :: Path) <- (lift . head) =<< unrecord result "path"
   return rawPath
+
+fetchMechanism :: Int -> BoltActionT IO RawMechanismDetails
+fetchMechanism id = do
+  result <-
+    queryP
+      "MATCH \
+             \(reaction:Reaction)-[follow:FOLLOW]->(mechanism:Mechanism { id: $id}), \
+             \(mechanism)-[has_stage:HAS_STAGE]->(stage:Stage), \
+             \(stage)<-[include:INCLUDE]-(participant) \
+             \RETURN DISTINCT mechanism, \
+             \  follow, \
+             \  COLLECT(DISTINCT has_stage) AS has_stages, \
+             \  COLLECT(DISTINCT stage) AS stages, \
+             \  COLLECT(DISTINCT include) AS includes, \
+             \  COLLECT(DISTINCT participant) AS participants"
+      (props [("id", I id)])
+  (rawMechanism    :: Node)           <- (lift . head) =<< unrecord result "mechanism"
+  (rawStages       :: [Node])         <- (lift . head) =<< unrecord result "stages"
+  (rawInclude      :: [Relationship]) <- (lift . head) =<< unrecord result "includes"
+  (rawInteractants :: [Node])         <- (lift . head) =<< unrecord result "participants"
+  (rawFollow       :: Relationship)   <- (lift . head) =<< unrecord result "follow"
+  return
+    RawMechanismDetails
+      { rawMechanism
+      , rawStages
+      , rawInclude
+      , rawInteractants
+      , rawFollow
+      }

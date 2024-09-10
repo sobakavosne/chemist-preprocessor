@@ -35,9 +35,9 @@ RUN \
 
 ENV PATH="/usr/local/bin:/usr/local/bin/ghc-${GHC}/bin:/usr/local/bin/cabal-${CABAL}/bin:${PATH}"
 
-COPY . .
-
 RUN cabal update
+
+COPY . .
 
 RUN cabal install --dependencies-only --installdir=/app
 

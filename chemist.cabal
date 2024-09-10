@@ -39,8 +39,10 @@ library
     API.Server
     Domain.Converter.Converter
     Domain.Converter.Type
-    Domain.Converter.Units.ToDetails
-    Domain.Converter.Units.ToDetailsSpec
+    Domain.Converter.Units.ToReactionDetails
+    Domain.Converter.Units.ToReactionDetailsSpec
+    Domain.Converter.Units.ToMechanismDetails
+    Domain.Converter.Units.ToMechanismDetailsSpec
     Domain.Converter.Units.ToPath
     Domain.Converter.Units.ToPathSpec
     Domain.Converter.Units.ToRawDetails

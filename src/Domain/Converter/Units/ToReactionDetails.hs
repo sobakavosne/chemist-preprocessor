@@ -1,12 +1,12 @@
 {-# LANGUAGE NamedFieldPuns      #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Domain.Converter.Units.ToDetails
-  ( toDetails
+module Domain.Converter.Units.ToReactionDetails
+  ( toReactionDetails
   ) where
 
 import           Control.Monad         (forM)
-import           Domain.Converter.Type (Elem (..), Identity, exact)
+import           Domain.Converter.Type (Subject (..), Identity, exact, relationOf)
 import           Models                (ACCELERATE (..), Catalyst (..),
                                         Molecule (..), PRODUCT_FROM (..),
                                         REAGENT_IN (..),
@@ -14,12 +14,8 @@ import           Models                (ACCELERATE (..), Catalyst (..),
                                         ReactionDetails (..))
 import           Prelude               hiding (id)
 
--- Let's suppose we have a unique values
-relationOf :: Eq b => [(a, b)] -> [(c, b)] -> [(a, c)]
-relationOf xs ys = [(x1, y1) | (x1, x2) <- xs, (y1, y2) <- ys, x2 == y2]
-
-toDetails :: RawReactionDetails -> IO ReactionDetails
-toDetails RawDetails { rawReaction
+toReactionDetails :: RawReactionDetails -> IO ReactionDetails
+toReactionDetails RawReactionDetails { rawReaction
                      , rawReagents
                      , rawProducts
                      , rawInbound
@@ -27,15 +23,15 @@ toDetails RawDetails { rawReaction
                      , rawAccelerate
                      , rawCatalysts
                      } = do
-  (reaction'   :: (Reaction, Identity))       <- (exact . ENode) rawReaction
-  (reagents'   :: [(Molecule, Identity)])     <- forM rawReagents (exact . ENode)
-  (products'   :: [(Molecule, Identity)])     <- forM rawProducts (exact . ENode)
-  (inbound'    :: [(REAGENT_IN, Identity)])   <- forM rawInbound (exact . ERel)
-  (outbound'   :: [(PRODUCT_FROM, Identity)]) <- forM rawOutbound (exact . ERel)
-  (catalysts'  :: [(Catalyst, Identity)])     <- forM rawCatalysts (exact . ENode)
-  (accelerate' :: [(ACCELERATE, Identity)])   <- forM rawAccelerate (exact . ERel)
+  (reaction'   :: (Reaction, Identity))       <- (exact . SNode) rawReaction
+  (reagents'   :: [(Molecule, Identity)])     <- forM rawReagents (exact . SNode)
+  (products'   :: [(Molecule, Identity)])     <- forM rawProducts (exact . SNode)
+  (inbound'    :: [(REAGENT_IN, Identity)])   <- forM rawInbound (exact . SRel)
+  (outbound'   :: [(PRODUCT_FROM, Identity)]) <- forM rawOutbound (exact . SRel)
+  (catalysts'  :: [(Catalyst, Identity)])     <- forM rawCatalysts (exact . SNode)
+  (accelerate' :: [(ACCELERATE, Identity)])   <- forM rawAccelerate (exact . SRel)
   return
-    Details
+    ReactionDetails
       { reaction = fst reaction'
       , inboundReagents = relationOf inbound' reagents'
       , outboundProducts = relationOf outbound' products'

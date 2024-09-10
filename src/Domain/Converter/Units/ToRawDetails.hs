@@ -12,7 +12,11 @@ import           Models                (NodeMask, RawReactionDetailsMask (..),
                                         ReactionDetails (..), RelMask)
 
 toRawDetails :: ReactionDetails -> IO RawReactionDetailsMask
-toRawDetails Details {reaction, inboundReagents, outboundProducts, conditions} = do
+toRawDetails ReactionDetails { reaction
+                             , inboundReagents
+                             , outboundProducts
+                             , conditions
+                             } = do
   let (inbound, reagents)           = unzip inboundReagents
   let (outbound, products)          = unzip outboundProducts
   let (accelerate, catalysts)       = unzip conditions

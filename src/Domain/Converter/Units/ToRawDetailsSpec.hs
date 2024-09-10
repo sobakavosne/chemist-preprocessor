@@ -43,7 +43,7 @@ testProductFrom = PRODUCT_FROM {productAmount = 2.0}
 
 testReactionDetails :: ReactionDetails
 testReactionDetails =
-  Details
+  ReactionDetails
     { reaction = testReaction
     , inboundReagents = [(testReagentIn, testMolecule)]
     , outboundProducts = [(testProductFrom, testMolecule)]

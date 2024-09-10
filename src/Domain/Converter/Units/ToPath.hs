@@ -5,10 +5,10 @@ module Domain.Converter.Units.ToPath
   ) where
 
 import           Database.Bolt         (Path)
-import           Domain.Converter.Type (Elem (EPath), exact)
+import           Domain.Converter.Type (Subject (SPath), exact)
 import           Models                (PathMask)
 
 toPath :: Path -> IO PathMask
 toPath rawPath = do
-  (pathMask :: PathMask) <- (exact . EPath) rawPath
+  (pathMask :: PathMask) <- (exact . SPath) rawPath
   return pathMask

@@ -14,12 +14,14 @@ import           Data.Aeson                      (FromJSON, ToJSON)
 import qualified Data.ByteString.Char8           as BS
 import qualified Data.ByteString.Lazy.Char8      as LBS
 import           Data.Time                       (getCurrentTime)
-import           Domain.Service                  (deleteReaction, getPath,
-                                                  getReaction, postReaction)
+import           Domain.Service                  (deleteReaction, getMechanism,
+                                                  getPath, getReaction,
+                                                  postReaction)
 import           GHC.Generics                    (Generic)
 import           Infrastructure.Config           (loadBoltCfg)
 import           Infrastructure.Database         (checkNeo4j, withNeo4j)
-import           Models                          (PathMask, Reaction,
+import           Models                          (MechanismDetails, PathMask,
+                                                  ProcessDetails (..), Reaction,
                                                   ReactionDetails)
 import           Network.HTTP.Types.Header       (hContentType)
 import           Prelude                         hiding (id)
@@ -61,11 +63,13 @@ logWith level logger msg = do
   flushLogStr logger
 
 type API =
-  "health" S.:> S.Get '[ S.JSON] (S.Headers '[ S.Header "Content-Type" String] HealthCheck) S.:<|>
-  "reaction" S.:> S.Capture "id" Int S.:> S.Get '[ S.JSON] (S.Headers '[ S.Header "Content-Type" String] ReactionDetails) S.:<|>
-  "reaction" S.:> S.ReqBody '[ S.JSON] ReactionDetails S.:> S.Post '[ S.JSON] (S.Headers '[ S.Header "Content-Type" String] Reaction) S.:<|>
-  "reaction" S.:> S.Capture "id" Int S.:> S.DeleteNoContent S.:<|>
-  "path" S.:> S.Capture "start" Int S.:> S.Capture "end" Int S.:> S.Get '[S.JSON] (S.Headers '[S.Header "Content-Type" String] PathMask)
+  "health"    S.:> S.Get '[ S.JSON] (S.Headers '[ S.Header "Content-Type" String] HealthCheck) S.:<|>
+  "reaction"  S.:> S.Capture "id" Int S.:> S.Get '[ S.JSON] (S.Headers '[ S.Header "Content-Type" String] ReactionDetails) S.:<|>
+  "reaction"  S.:> S.ReqBody '[ S.JSON] ReactionDetails S.:> S.Post '[ S.JSON] (S.Headers '[ S.Header "Content-Type" String] Reaction) S.:<|>
+  "reaction"  S.:> S.Capture "id" Int S.:> S.DeleteNoContent S.:<|>
+  "path"      S.:> S.Capture "start" Int S.:> S.Capture "end" Int S.:> S.Get '[S.JSON] (S.Headers '[S.Header "Content-Type" String] PathMask) S.:<|>
+  "mechanism" S.:> S.Capture "id" Int S.:> S.Get '[ S.JSON] (S.Headers '[ S.Header "Content-Type" String] MechanismDetails) S.:<|>
+  "process"   S.:> S.Capture "reactionId" Int S.:> S.Capture "mechanismId" Int S.:> S.Get '[ S.JSON] (S.Headers '[ S.Header "Content-Type" String] ProcessDetails)
 
 api :: S.Proxy API
 api = S.Proxy
@@ -118,8 +122,8 @@ deleteReactionHandler id = do
   return S.NoContent
 
 getPathHandler ::
-     Int
-  -> Int
+     Int -- ^ Start molecule ID
+  -> Int -- ^ End molecule ID
   -> S.Handler (S.Headers '[ S.Header "Content-Type" String] PathMask)
 getPathHandler start end = do
   logger <- liftIO initLogger
@@ -127,8 +131,31 @@ getPathHandler start end = do
   (liftIO . logWith Info logger . show) result
   (return . S.addHeader contentTypeJson) result
 
+getMechanismHandler ::
+     Int
+  -> S.Handler (S.Headers '[ S.Header "Content-Type" String] MechanismDetails)
+getMechanismHandler id = do
+  logger <- liftIO initLogger
+  result <- (liftIO . getMechanism) id
+  (liftIO . logWith Info logger . show) result
+  (return . S.addHeader contentTypeJson) result
+
+getProcessDetailsHandler ::
+     Int -- ^ Reaction ID
+  -> Int -- ^ Mechanism ID
+  -> S.Handler (S.Headers '[ S.Header "Content-Type" String] ProcessDetails)
+getProcessDetailsHandler reactionId mechanismId = do
+  logger <- liftIO initLogger
+  reactionDetails <- liftIO $ getReaction reactionId
+  mechanismDetails <- liftIO $ getMechanism mechanismId
+  let processDetails = ProcessDetails {reactionDetails, mechanismDetails}
+  (liftIO . logWith Info logger . show) processDetails
+  return $ S.addHeader contentTypeJson processDetails
+
 server :: S.Server API
 server =
   healthHandler S.:<|> getReactionHandler S.:<|> postReactionHandler S.:<|>
   deleteReactionHandler S.:<|>
-  getPathHandler
+  getPathHandler S.:<|>
+  getMechanismHandler S.:<|>
+  getProcessDetailsHandler

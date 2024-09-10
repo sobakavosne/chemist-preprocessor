@@ -7,19 +7,29 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 
 module Models
-  ( RelMask(..)
+  ( Stage(..)
+  , RelMask(..)
   , PathMask(..)
   , NodeMask(..)
   , Molecule(..)
   , Reaction(..)
   , Catalyst(..)
+  , Mechanism(..)
   , Interactant(..)
+  , ProcessDetails(..)
+  , ReactionDetails(..)
+  , MechanismDetails(..)
+  , RawReactionDetails(..)
+  , RawMechanismDetails(..)
+  , RawReactionDetailsMask(..)
+  , RawMechanismDetailsMask(..)
+  , INCLUDE(..)
+  , HAS_STAGE(..)
+  , NEXT_STAGE(..)
   , REAGENT_IN(..)
   , ACCELERATE(..)
   , PRODUCT_FROM(..)
-  , ReactionDetails(..)
-  , RawReactionDetails(..)
-  , RawReactionDetailsMask(..)
+  , FOLLOW(..)
   ) where
 
 import           Data.Aeson    (FromJSON, ToJSON)
@@ -37,11 +47,18 @@ data Interactant
   | IProductFrom PRODUCT_FROM
   | IReagentIn REAGENT_IN
   | IReaction Reaction
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic, Eq)
 
 instance ToJSON Interactant
 
 instance FromJSON Interactant
+
+data Explain
+  = EMechanism Mechanism
+  | EStage Stage
+  | EHasStage HAS_STAGE
+  | EInvolve
+  deriving (Show, Generic, Eq)
 
 newtype NodeMask =
   NodeMask
@@ -61,7 +78,7 @@ data PathMask =
     , pathRelationshipsMask :: [Interactant]
     , pathSequenceMask      :: [Int]
     }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic, Eq)
 
 instance ToJSON PathMask
 
@@ -141,8 +158,99 @@ instance FromJSON REAGENT_IN
 
 instance ToJSON REAGENT_IN
 
+data Mechanism =
+  Mechanism
+    { mechanismId               :: Int
+    , mechanismName             :: String
+    , mechanismType             :: String
+    , mechanismActivationEnergy :: Float
+    }
+  deriving (Show, Generic, Eq)
+
+instance FromJSON Mechanism
+
+instance ToJSON Mechanism
+
+newtype FOLLOW =
+  FOLLOW
+    { description :: String
+    }
+  deriving (Show, Generic, Eq)
+
+instance FromJSON FOLLOW
+
+instance ToJSON FOLLOW
+
+data Stage =
+  Stage
+    { stageOrder       :: Int
+    , stageName        :: String
+    , stageDescription :: String
+    , stageProducts    :: [String]
+    }
+  deriving (Show, Generic, Eq)
+
+instance FromJSON Stage
+
+instance ToJSON Stage
+
+data HAS_STAGE =
+  HAS_STAGE
+  deriving (Show, Generic, Eq)
+
+instance FromJSON HAS_STAGE
+
+instance ToJSON HAS_STAGE
+
+data NEXT_STAGE =
+  NEXT_STAGE
+  deriving (Show, Generic, Eq)
+
+instance FromJSON NEXT_STAGE
+
+instance ToJSON NEXT_STAGE
+
+data INCLUDE =
+  INCLUDE
+  deriving (Show, Generic, Eq)
+
+instance FromJSON INCLUDE
+
+instance ToJSON INCLUDE
+
+data MechanismDetails =
+  MechanismDetails
+    { mechanismContext  :: (Mechanism, FOLLOW)
+    , stageInteractants :: [(Stage, [Interactant])]
+    }
+  deriving (Show, Generic, Eq)
+
+instance ToJSON MechanismDetails
+
+instance FromJSON MechanismDetails
+
+data RawMechanismDetails =
+  RawMechanismDetails
+    { rawMechanism    :: Node
+    , rawInteractants :: [Node]
+    , rawInclude      :: [Relationship]
+    , rawStages       :: [Node]
+    , rawFollow       :: Relationship
+    }
+  deriving (Show, Eq)
+
+data RawMechanismDetailsMask =
+  RawMechanismDetailsMask
+    { rawMechanismMask    :: NodeMask
+    , rawContextMask      :: RelMask
+    , rawStagesMask       :: [NodeMask]
+    , rawIncludeMask      :: [RelMask]
+    , rawParticipantsMask :: [NodeMask]
+    }
+  deriving (Show, Eq)
+
 data ReactionDetails =
-  Details
+  ReactionDetails
     { reaction         :: Reaction
     , inboundReagents  :: [(REAGENT_IN, Molecule)]
     , outboundProducts :: [(PRODUCT_FROM, Molecule)]
@@ -155,7 +263,7 @@ instance FromJSON ReactionDetails
 instance ToJSON ReactionDetails
 
 data RawReactionDetails =
-  RawDetails
+  RawReactionDetails
     { rawReaction   :: Node
     , rawReagents   :: [Node]
     , rawProducts   :: [Node]
@@ -177,3 +285,14 @@ data RawReactionDetailsMask =
     , rawCatalystsMask  :: [NodeMask]
     }
   deriving (Show, Eq)
+
+data ProcessDetails =
+  ProcessDetails
+    { reactionDetails  :: ReactionDetails
+    , mechanismDetails :: MechanismDetails
+    }
+  deriving (Show, Generic, Eq)
+
+instance FromJSON ProcessDetails
+
+instance ToJSON ProcessDetails

@@ -53,7 +53,7 @@ testReactionDetails =
 toRawDetailsSpec :: Spec
 toRawDetailsSpec = do
   describe "toRawDetails" $ do
-    it "should convert ReactionDetails to RawReactionDetailsMask" $ do
+    it "should convert `ReactionDetails` to `RawReactionDetailsMask`" $ do
       let expectedRawReactionMask =
             NodeMask
               {nodePropsMask = props [("id", I 1), ("name", T "Test Reaction")]}

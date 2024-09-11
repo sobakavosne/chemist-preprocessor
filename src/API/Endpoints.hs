@@ -1,8 +1,8 @@
-{-# LANGUAGE DataKinds            #-}
-{-# LANGUAGE DeriveGeneric        #-}
-{-# LANGUAGE NamedFieldPuns       #-}
-{-# LANGUAGE TypeOperators        #-}
-{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE NamedFieldPuns    #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeOperators     #-}
 
 module API.Endpoints
   ( api
@@ -18,7 +18,6 @@ import           Domain.Service                  (deleteReaction, getMechanism,
                                                   getPath, getReaction,
                                                   postReaction)
 import           GHC.Generics                    (Generic)
-import           Infrastructure.Config           (loadBoltCfg)
 import           Infrastructure.Database         (checkNeo4j, withNeo4j)
 import           Models                          (MechanismDetails, PathMask,
                                                   ProcessDetails (..), Reaction,
@@ -31,6 +30,16 @@ import           System.Log.FastLogger           (LoggerSet,
                                                   defaultBufSize, flushLogStr,
                                                   newStdoutLoggerSet)
 import           System.Log.FastLogger.LoggerSet (pushLogStrLn)
+
+import           Control.Exception               (Exception, throw)
+import           Data.Bool                       (bool)
+import           Data.Text                       (Text)
+
+newtype MismatchError =
+  MismatchError Text
+  deriving (Show)
+
+instance Exception MismatchError
 
 data HealthCheck =
   HealthCheck
@@ -66,7 +75,7 @@ type API =
   "health"    S.:> S.Get '[ S.JSON] (S.Headers '[ S.Header "Content-Type" String] HealthCheck) S.:<|>
   "reaction"  S.:> S.Capture "id" Int S.:> S.Get '[ S.JSON] (S.Headers '[ S.Header "Content-Type" String] ReactionDetails) S.:<|>
   "reaction"  S.:> S.ReqBody '[ S.JSON] ReactionDetails S.:> S.Post '[ S.JSON] (S.Headers '[ S.Header "Content-Type" String] Reaction) S.:<|>
-  "reaction"  S.:> S.Capture "id" Int S.:> S.DeleteNoContent S.:<|>
+  "reaction"  S.:> S.Capture "id" Int S.:> S.Delete '[ S.JSON] (S.Headers '[ S.Header "Content-Type" String] Int) S.:<|>
   "path"      S.:> S.Capture "start" Int S.:> S.Capture "end" Int S.:> S.Get '[S.JSON] (S.Headers '[S.Header "Content-Type" String] PathMask) S.:<|>
   "mechanism" S.:> S.Capture "id" Int S.:> S.Get '[ S.JSON] (S.Headers '[ S.Header "Content-Type" String] MechanismDetails) S.:<|>
   "process"   S.:> S.Capture "reactionId" Int S.:> S.Capture "mechanismId" Int S.:> S.Get '[ S.JSON] (S.Headers '[ S.Header "Content-Type" String] ProcessDetails)
@@ -81,7 +90,7 @@ healthHandler ::
      S.Handler (S.Headers '[ S.Header "Content-Type" String] HealthCheck)
 healthHandler = do
   logger <- liftIO initLogger
-  result <- liftIO . withNeo4j checkNeo4j =<< liftIO loadBoltCfg
+  result <- (liftIO . withNeo4j) checkNeo4j
   let neo4jMessage =
         if result
           then "Neo4j is alive"
@@ -110,16 +119,18 @@ postReactionHandler ::
   -> S.Handler (S.Headers '[ S.Header "Content-Type" String] Reaction)
 postReactionHandler details = do
   logger <- liftIO initLogger
-  reaction <- liftIO $ postReaction details
-  (liftIO . logWith Info logger . show) reaction
-  return $ S.addHeader contentTypeJson reaction
+  result <- liftIO $ postReaction details
+  (liftIO . logWith Info logger . show) result
+  return $ S.addHeader contentTypeJson result
 
-deleteReactionHandler :: Int -> S.Handler S.NoContent
+deleteReactionHandler ::
+     Int -> S.Handler (S.Headers '[ S.Header "Content-Type" String] Int)
 deleteReactionHandler id = do
   logger <- liftIO initLogger
-  liftIO $ deleteReaction id
-  liftIO . logWith Info logger $ "Reaction with ID " ++ show id ++ " deleted."
-  return S.NoContent
+  result <- liftIO $ deleteReaction id
+  (liftIO . logWith Info logger)
+    ("Reaction with ID " <> show result <> " deleted.")
+  (return . S.addHeader contentTypeJson) result
 
 getPathHandler ::
      Int -- ^ Start molecule ID
@@ -136,7 +147,7 @@ getMechanismHandler ::
   -> S.Handler (S.Headers '[ S.Header "Content-Type" String] MechanismDetails)
 getMechanismHandler id = do
   logger <- liftIO initLogger
-  result <- (liftIO . getMechanism) id
+  result <- (fmap fst . liftIO . getMechanism) id
   (liftIO . logWith Info logger . show) result
   (return . S.addHeader contentTypeJson) result
 
@@ -147,10 +158,16 @@ getProcessDetailsHandler ::
 getProcessDetailsHandler reactionId mechanismId = do
   logger <- liftIO initLogger
   reactionDetails <- liftIO $ getReaction reactionId
-  mechanismDetails <- liftIO $ getMechanism mechanismId
-  let processDetails = ProcessDetails {reactionDetails, mechanismDetails}
-  (liftIO . logWith Info logger . show) processDetails
-  return $ S.addHeader contentTypeJson processDetails
+  (mechanismDetails, reactionId') <- liftIO $ getMechanism mechanismId
+  bool
+    (throw
+       (MismatchError
+          "The requested mechanism does not match the requested reaction"))
+    (pure ())
+    (reactionId == reactionId')
+  let result = ProcessDetails {reactionDetails, mechanismDetails}
+  (liftIO . logWith Info logger . show) result
+  return $ S.addHeader contentTypeJson result
 
 server :: S.Server API
 server =

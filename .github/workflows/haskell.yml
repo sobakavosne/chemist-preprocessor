@@ -5,10 +5,22 @@ on:
     branches: ["master"]
     paths-ignore:
       - "**/*.txt"
+      - "**/*.sh"
+      - "examples/**"
+      - "migrations/**"
+      - "scripts/**"
+      - "Dockerfile*"
+      - "docker*"
   pull_request:
     branches: ["master"]
     paths-ignore:
       - "**/*.txt"
+      - "**/*.sh"
+      - "examples/**"
+      - "migrations/**"
+      - "scripts/**"
+      - "Dockerfile*"
+      - "docker*"
 
 permissions:
   contents: read
@@ -46,9 +58,3 @@ jobs:
 
       - name: Run tests
         run: cabal test all --test-show-details=always
-
-      # - name: Initialize environment and start Docker
-      #   run: |
-      #     export NEO4J_PASSWORD=test_auth_token
-      #     chmod +x run.sh
-      #     ./run.sh

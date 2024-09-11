@@ -1,36 +1,7 @@
-{-# LANGUAGE DeriveGeneric         #-}
-{-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE FlexibleContexts      #-}
-{-# LANGUAGE InstanceSigs          #-}
-{-# LANGUAGE ScopedTypeVariables   #-}
-{-# LANGUAGE UndecidableInstances  #-}
-{-# OPTIONS_GHC -Wno-orphans #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE InstanceSigs  #-}
 
-module Models
-  ( Stage(..)
-  , RelMask(..)
-  , PathMask(..)
-  , NodeMask(..)
-  , Molecule(..)
-  , Reaction(..)
-  , Catalyst(..)
-  , Mechanism(..)
-  , Interactant(..)
-  , ProcessDetails(..)
-  , ReactionDetails(..)
-  , MechanismDetails(..)
-  , RawReactionDetails(..)
-  , RawMechanismDetails(..)
-  , RawReactionDetailsMask(..)
-  , RawMechanismDetailsMask(..)
-  , INCLUDE(..)
-  , HAS_STAGE(..)
-  , NEXT_STAGE(..)
-  , REAGENT_IN(..)
-  , ACCELERATE(..)
-  , PRODUCT_FROM(..)
-  , FOLLOW(..)
-  ) where
+module Models where
 
 import           Data.Aeson    (FromJSON, ToJSON)
 import           Data.Default  (Default (def))
@@ -38,7 +9,10 @@ import           Data.Map      (Map)
 import           Data.Text     (Text)
 import           Database.Bolt (Node, Relationship, Value)
 import           GHC.Generics  (Generic)
-import           Prelude       hiding (id)
+
+type ReactionId = Int
+
+type ReactionNode = Node
 
 data Interactant
   = IAccelerate ACCELERATE
@@ -56,8 +30,6 @@ instance FromJSON Interactant
 data Explain
   = EMechanism Mechanism
   | EStage Stage
-  | EHasStage HAS_STAGE
-  | EInvolve
   deriving (Show, Generic, Eq)
 
 newtype NodeMask =
@@ -193,22 +165,6 @@ data Stage =
 instance FromJSON Stage
 
 instance ToJSON Stage
-
-data HAS_STAGE =
-  HAS_STAGE
-  deriving (Show, Generic, Eq)
-
-instance FromJSON HAS_STAGE
-
-instance ToJSON HAS_STAGE
-
-data NEXT_STAGE =
-  NEXT_STAGE
-  deriving (Show, Generic, Eq)
-
-instance FromJSON NEXT_STAGE
-
-instance ToJSON NEXT_STAGE
 
 data INCLUDE =
   INCLUDE

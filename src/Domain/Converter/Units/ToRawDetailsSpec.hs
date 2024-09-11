@@ -30,7 +30,7 @@ testMolecule =
 testCatalyst :: Catalyst
 testCatalyst =
   Catalyst
-    {catalystId = 1, catalystSmiles = "C", catalystName = "Test Catalyst"}
+    {catalystId = 1, catalystSmiles = "C", catalystName = Just "Test Catalyst"}
 
 testAccelerate :: ACCELERATE
 testAccelerate = ACCELERATE {temperature = [273.15], pressure = [101.325]}

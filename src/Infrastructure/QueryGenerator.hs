@@ -4,7 +4,7 @@ module Infrastructure.QueryGenerator
   ( createReactionQueryFrom
   ) where
 
-import           Data.Map      (Map, toList)
+import           Data.Map      (Map, delete, toList, (!?))
 import           Data.Text     (Text, intercalate, pack)
 import           Database.Bolt (Value (..))
 import           Models        (NodeMask (..), RawReactionDetailsMask (..),
@@ -83,7 +83,17 @@ createReactionQueryFrom details =
 
 nodeToCypher :: Text -> Text -> NodeMask -> Text
 nodeToCypher alias label (NodeMask props) =
-  "(" <> alias <> ":" <> label <> " {" <> propsToCypher props <> "})"
+  let props' =
+        case label of
+          "Catalyst" -> checkCatalystName props
+          _          -> props
+   in "(" <> alias <> ":" <> label <> " {" <> propsToCypher props' <> "})"
+
+checkCatalystName :: Map Text Value -> Map Text Value
+checkCatalystName props =
+  case props !? "name" of
+    Just (N ()) -> delete "name" props
+    _           -> props
 
 relToCypher :: Text -> Text -> Text -> RelMask -> Text
 relToCypher from to relType (RelMask props) =

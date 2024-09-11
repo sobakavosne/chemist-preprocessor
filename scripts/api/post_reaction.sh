@@ -39,17 +39,5 @@ curl -X POST http://localhost:8080/reaction \
       }
     ]
   ],
-  "conditions": [
-    [
-      {
-        "temperature": [323.15],
-        "pressure": [151.825]
-      },
-      {
-        "catalystId": 32,
-        "catalystSmiles": "Cl[Zn]",
-        "catalystName": "Zinc Chloride"
-      }
-    ]
-  ]
+  "conditions": []
 }'

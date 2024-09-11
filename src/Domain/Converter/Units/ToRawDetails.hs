@@ -6,11 +6,16 @@ module Domain.Converter.Units.ToRawDetails
   ) where
 
 import           Control.Monad              (forM)
+import           Data.Bool                  (bool)
+import           Data.Default               (Default (def))
 import           Domain.Converter.Instances ()
 import           Domain.Converter.Type      (exactRaw)
 import           Models                     (Interactant (..), NodeMask,
                                              RawReactionDetailsMask (..),
                                              ReactionDetails (..), RelMask)
+
+def' :: Default a => [a] -> [a]
+def' details = bool details [def] $ null details
 
 toRawDetails :: ReactionDetails -> IO RawReactionDetailsMask
 toRawDetails ReactionDetails { reaction
@@ -26,8 +31,8 @@ toRawDetails ReactionDetails { reaction
   (rawProductsMask   :: [NodeMask]) <- forM products (exactRaw . IMolecule)
   (rawInboundMask    :: [RelMask])  <- forM inbound (exactRaw . IReagentIn)
   (rawOutboundMask   :: [RelMask])  <- forM outbound (exactRaw . IProductFrom)
-  (rawAccelerateMask :: [RelMask])  <- forM accelerate (exactRaw . IAccelerate)
-  (rawCatalystsMask  :: [NodeMask]) <- forM catalysts (exactRaw . ICatalyst)
+  (rawAccelerateMask :: [RelMask])  <- forM (def' accelerate) (exactRaw . IAccelerate)
+  (rawCatalystsMask  :: [NodeMask]) <- forM (def' catalysts) (exactRaw . ICatalyst)
   return
     RawDetailsMask
       { rawReactionMask

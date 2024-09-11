@@ -5,11 +5,12 @@ module Domain.Converter.Units.ToRawDetails
   ( toRawDetails
   ) where
 
-import           Control.Monad         (forM)
-import           Domain.Converter.Type (Interactant (IAccelerate, ICatalyst, IMolecule, IProductFrom, IReaction, IReagentIn),
-                                        exactRaw)
-import           Models                (NodeMask, RawReactionDetailsMask (..),
-                                        ReactionDetails (..), RelMask)
+import           Control.Monad              (forM)
+import           Domain.Converter.Instances ()
+import           Domain.Converter.Type      (exactRaw)
+import           Models                     (Interactant (..), NodeMask,
+                                             RawReactionDetailsMask (..),
+                                             ReactionDetails (..), RelMask)
 
 toRawDetails :: ReactionDetails -> IO RawReactionDetailsMask
 toRawDetails ReactionDetails { reaction

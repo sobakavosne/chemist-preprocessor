@@ -3,6 +3,7 @@
 {-# LANGUAGE NamedFieldPuns    #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
+{-# OPTIONS_GHC -Wno-missing-methods #-}
 {-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 
 module Domain.Converter.Instances where
@@ -34,12 +35,18 @@ instance FromValue Int where
 
 instance {-# OVERLAPPING #-} FromValue String where
   fromValue (T t) = (Right . unpack) t
+  maybeFromValue (Just (T t)) = (Just . unpack) t
+  maybeFromValue _            = Nothing
 
 instance FromValue Float where
   fromValue (F d) = Right (doubleToFloat d)
 
 instance FromValue a => FromValue [a] where
   fromValue (L l) = mapM fromValue l
+
+instance FromValue a => FromValue (Maybe a) where
+  fromValue (N ()) = Right Nothing
+  fromValue v      = Just <$> fromValue v
 
 instance ElemInteractant (Molecule, Identity) where
   exactInteractant (SNode (Node {nodeIdentity, labels, nodeProps}))
@@ -57,9 +64,12 @@ instance ElemInteractant (Catalyst, Identity) where
     | "Catalyst" `elem` labels = do
       catalystId <- unpackProp "id" nodeProps
       catalystSmiles <- unpackProp "smiles" nodeProps
-      catalystName <- unpackProp "name" nodeProps
       return
-        ( Catalyst {catalystId, catalystSmiles, catalystName}
+        ( Catalyst
+            { catalystId
+            , catalystSmiles
+            , catalystName = maybeFromValue $ nodeProps !? "name"
+            }
         , NodeId nodeIdentity)
     | otherwise = throw $ ParsingError "No 'Catalyst' label"
 

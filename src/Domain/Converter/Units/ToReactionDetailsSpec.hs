@@ -61,7 +61,9 @@ toReactionDetailsSpec = do
               , outboundProducts =
                   [(PRODUCT_FROM 1.0, Molecule 2 "CO" "Methanol")]
               , conditions =
-                  [(ACCELERATE [273.15] [101.325], Catalyst 1 "H2O" "Water")]
+                  [ ( ACCELERATE [273.15] [101.325]
+                    , Catalyst 1 "H2O" (Just "Water"))
+                  ]
               }
       result <- toReactionDetails mockRawReactionDetails
       result `shouldBe` expectedReactionDetails

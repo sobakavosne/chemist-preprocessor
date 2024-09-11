@@ -51,6 +51,7 @@ instance Exception ParsingError
 
 class FromValue a where
   fromValue :: Value -> Either ParsingError a
+  maybeFromValue :: Maybe Value -> Maybe a
 
 class ElemInteractant a where
   exactInteractant :: Subject -> Either ParsingError a

@@ -149,19 +149,19 @@ toMechanismDetailsSpec = do
                 Catalyst
                   { catalystId = 23
                   , catalystSmiles = "O=P(O)(O)O"
-                  , catalystName = "Phosphoric Acid"
+                  , catalystName = Just "Phosphoric Acid"
                   }
             , ICatalyst
                 Catalyst
                   { catalystId = 24
                   , catalystSmiles = "O=S(=O)(O)O"
-                  , catalystName = "Sulfuric Acid"
+                  , catalystName = Just "Sulfuric Acid"
                   }
             , ICatalyst
                 Catalyst
                   { catalystId = 25
                   , catalystSmiles = "O=[Si]O[Si](O)O[Si](O)O"
-                  , catalystName = "Zeolite"
+                  , catalystName = Just "Zeolite"
                   }
             ]
           mockInteractants2 =

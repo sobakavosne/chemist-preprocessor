@@ -1,14 +1,19 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE InstanceSigs  #-}
+{-# LANGUAGE DeriveGeneric  #-}
+{-# LANGUAGE InstanceSigs   #-}
+{-# OPTIONS_GHC -Wno-name-shadowing #-}
+{-# LANGUAGE NamedFieldPuns #-}
 
 module Models where
 
-import           Data.Aeson    (FromJSON, ToJSON)
-import           Data.Default  (Default (def))
-import           Data.Map      (Map)
-import           Data.Text     (Text)
-import           Database.Bolt (Node, Relationship, Value)
-import           GHC.Generics  (Generic)
+import           Data.Aeson       (FromJSON, ToJSON, object, withObject, (.:),
+                                   (.:?), (.=))
+import           Data.Aeson.Key   (fromString)
+import qualified Data.Aeson.Types
+import           Data.Default     (Default (def))
+import           Data.Map         (Map)
+import           Data.Text        (Text)
+import           Database.Bolt    (Node, Relationship, Value)
+import           GHC.Generics     (Generic)
 
 type ReactionId = Int
 
@@ -83,13 +88,34 @@ data Catalyst =
   Catalyst
     { catalystId     :: Int
     , catalystSmiles :: String
-    , catalystName   :: String
+    , catalystName   :: Maybe String
     }
   deriving (Show, Generic, Eq)
 
-instance FromJSON Catalyst
+instance Default Catalyst where
+  def =
+    Catalyst
+      { catalystId = 0
+      , catalystSmiles = "Default Catalyst"
+      , catalystName = Nothing
+      }
 
-instance ToJSON Catalyst
+instance FromJSON Catalyst where
+  parseJSON =
+    withObject "Catalyst" $ \v ->
+      Catalyst <$> v .: fromString "catalystId" <*>
+      v .: fromString "catalystSmiles" <*>
+      v .:? fromString "catalystName"
+
+instance ToJSON Catalyst where
+  toJSON (Catalyst {catalystId, catalystSmiles, catalystName}) =
+    object $
+    filter
+      ((/=) Data.Aeson.Types.Null . snd)
+      [ fromString "catalystId" .= catalystId
+      , fromString "catalystSmiles" .= catalystSmiles
+      , fromString "catalystName" .= catalystName
+      ]
 
 newtype PRODUCT_FROM =
   PRODUCT_FROM
@@ -113,7 +139,6 @@ data ACCELERATE
   deriving (Show, Generic, Eq)
 
 instance Default ACCELERATE where
-  def :: ACCELERATE
   def = ACCELERATE {temperature = [273.15], pressure = [101.325]}
 
 instance FromJSON ACCELERATE

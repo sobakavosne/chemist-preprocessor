@@ -38,9 +38,9 @@ library
     API.Endpoints
     API.Server
     Domain.Converter.Converter
+    Domain.Converter.Helpers
+    Domain.Converter.Instances
     Domain.Converter.Type
-    Domain.Converter.Units.ToReactionDetails
-    Domain.Converter.Units.ToReactionDetailsSpec
     Domain.Converter.Units.ToMechanismDetails
     Domain.Converter.Units.ToMechanismDetailsSpec
     Domain.Converter.Units.ToPath
@@ -48,6 +48,8 @@ library
     Domain.Converter.Units.ToRawDetails
     Domain.Converter.Units.ToRawDetailsSpec
     Domain.Converter.Units.ToReaction
+    Domain.Converter.Units.ToReactionDetails
+    Domain.Converter.Units.ToReactionDetailsSpec
     Domain.Converter.Units.ToReactionSpec
     Domain.Service
     Infrastructure.Config

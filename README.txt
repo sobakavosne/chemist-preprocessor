@@ -30,3 +30,27 @@
 
    • Any reaction has conditions (temperature and pressure) and should be supplied with 
      a catalyst or an empty catalyst node since the "conditions" element is a bond
+
+:Queries
+   
+   •  Ethene hydration mechanism is available by ID=4 (the only mechanism added). The full
+      process can be queried using the following query:
+
+      MATCH 
+             (reaction:Reaction { id: 4 })<-[accelerate:ACCELERATE]-(catalyst:Catalyst),
+             (reaction)-[product_from:PRODUCT_FROM]->(product:Molecule),
+             (reaction)<-[reagent_in:REAGENT_IN]-(reagent:Molecule),
+             (reaction)-[follow:FOLLOW]->(mechanism:Mechanism),
+             (mechanism)-[has_stage:HAS_STAGE]->(stage:Stage),
+             (stage)<-[include:INCLUDE]-(participant)
+      
+      RETURN 
+             mechanism, reaction, accelerate, catalyst, product, reagent, product_from,
+             reagent_in, follow, has_stage, stage, include, participant;
+
+:Next
+
+   • Mechanism should utilize the only relationship for ":Stage" (1st stage) to specify the starting 
+     point with ":START_WITH" relationship
+   
+   • Products should be pointed out with ":Ion" or ":Molecule"

@@ -20,10 +20,7 @@ toMechanismDetailsSpec :: Spec
 toMechanismDetailsSpec = do
   describe "toMechanismDetails" $ do
     it "should convert `RawMechanismDetails` to `MechanismDetails`" $ do
-      let mockReactionNode =
-            Node 100 ["Reaction"] $
-            props [("id", I 11), ("name", T "Sample Reaction")]
-          mockMechanismNode =
+      let mockMechanismNode =
             Node 1 ["Mechanism"] $
             props
               [ ("id", I 4)
@@ -100,14 +97,13 @@ toMechanismDetailsSpec = do
             props
               [("description", T "Electrophilic addition of water to ethene")]
       let mockRawMechanismDetails =
-            ( RawMechanismDetails
-                { rawMechanism = mockMechanismNode
-                , rawInteractants = mockInteractantNodes
-                , rawInclude = mockIncludeRel
-                , rawStages = mockStageNodes
-                , rawFollow = mockFollowRel
-                }
-            , mockReactionNode)
+            RawMechanismDetails
+              { rawMechanism = mockMechanismNode
+              , rawInteractants = mockInteractantNodes
+              , rawInclude = mockIncludeRel
+              , rawStages = mockStageNodes
+              , rawFollow = mockFollowRel
+              }
       let mockMechanism =
             Mechanism
               { mechanismId = 4
@@ -187,14 +183,13 @@ toMechanismDetailsSpec = do
                   }
             ]
       let expectedMechanismDetails =
-            ( MechanismDetails
-                { mechanismContext = (mockMechanism, mockFollow)
-                , stageInteractants =
-                    [ (mockStage1, mockInteractants1)
-                    , (mockStage2, mockInteractants2)
-                    , (mockStage3, mockInteractants3)
-                    ]
-                }
-            , 11)
+            MechanismDetails
+              { mechanismContext = (mockMechanism, mockFollow)
+              , stageInteractants =
+                  [ (mockStage1, mockInteractants1)
+                  , (mockStage2, mockInteractants2)
+                  , (mockStage3, mockInteractants3)
+                  ]
+              }
       result <- toMechanismDetails mockRawMechanismDetails
       result `shouldBe` expectedMechanismDetails

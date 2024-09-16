@@ -1,5 +1,6 @@
 module Domain.Service
   ( getPath
+  , getHealth
   , getReaction
   , getMechanism
   , postReaction
@@ -7,29 +8,32 @@ module Domain.Service
   ) where
 
 import           Domain.Converter.Converter (toMechanismDetails, toPath,
-                                             toRawDetails, toReaction,
+                                             toRawReactionDetails, toReaction,
                                              toReactionDetails)
-import           Infrastructure.Database    (createReaction, fetchMechanism,
-                                             fetchReaction, findPath,
-                                             removeReaction, withNeo4j)
-import           Models                     (MechanismDetails, PathMask,
+import           Infrastructure.Database    (checkNeo4j, createReaction,
+                                             fetchMechanism, fetchReaction,
+                                             findPath, removeReaction,
+                                             withNeo4j)
+import           Models                     (HealthCheck, MechanismDetails,
+                                             MechanismID, MoleculeID, PathMask,
                                              Reaction, ReactionDetails,
-                                             ReactionId)
+                                             ReactionID)
 import           Prelude                    hiding (id)
 
-getReaction :: Int -> IO ReactionDetails
+getHealth :: IO HealthCheck
+getHealth = withNeo4j checkNeo4j
+
+getReaction :: ReactionID -> IO (ReactionDetails, Maybe MechanismID)
 getReaction id = toReactionDetails =<< withNeo4j (fetchReaction id)
 
 postReaction :: ReactionDetails -> IO Reaction
-postReaction details = do
-  rawDetailsMask <- toRawDetails details
-  toReaction =<< withNeo4j (createReaction rawDetailsMask)
+postReaction details = toReaction =<< withNeo4j . createReaction =<< toRawReactionDetails details
 
-deleteReaction :: Int -> IO Int
+deleteReaction :: ReactionID -> IO ReactionID
 deleteReaction id = withNeo4j (removeReaction id)
 
-getPath :: Int -> Int -> IO PathMask
+getPath :: MoleculeID -> MoleculeID -> IO PathMask
 getPath start end = toPath =<< withNeo4j (findPath start end)
 
-getMechanism :: Int -> IO (MechanismDetails, ReactionId)
+getMechanism :: MechanismID -> IO MechanismDetails
 getMechanism id = toMechanismDetails =<< withNeo4j (fetchMechanism id)

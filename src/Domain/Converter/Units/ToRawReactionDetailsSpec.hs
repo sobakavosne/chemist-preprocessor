@@ -1,24 +1,24 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Domain.Converter.Units.ToRawDetailsSpec
-  ( toRawDetailsSpec
+module Domain.Converter.Units.ToRawReactionDetailsSpec
+  ( toRawReactionDetailsSpec
   ) where
 
-import           Data.Map                            (fromList)
-import           Database.Bolt                       (Value (..), props)
-import           Domain.Converter.Units.ToRawDetails (toRawDetails)
-import           Models                              (ACCELERATE (..),
-                                                      Catalyst (..),
-                                                      Molecule (..),
-                                                      NodeMask (..),
-                                                      PRODUCT_FROM (..),
-                                                      REAGENT_IN (..),
-                                                      RawReactionDetailsMask (..),
-                                                      Reaction (..),
-                                                      ReactionDetails (..),
-                                                      RelMask (..))
-import           Test.Hspec                          (Spec, describe, it,
-                                                      shouldBe)
+import           Data.Map                                    (fromList)
+import           Database.Bolt                               (Value (..), props)
+import           Domain.Converter.Units.ToRawReactionDetails (toRawReactionDetails)
+import           Models                                      (ACCELERATE (..),
+                                                              Catalyst (..),
+                                                              Molecule (..),
+                                                              NodeMask (..),
+                                                              PRODUCT_FROM (..),
+                                                              REAGENT_IN (..),
+                                                              RawReactionDetailsMask (..),
+                                                              Reaction (..),
+                                                              ReactionDetails (..),
+                                                              RelMask (..))
+import           Test.Hspec                                  (Spec, describe,
+                                                              it, shouldBe)
 
 testReaction :: Reaction
 testReaction = Reaction {reactionId = 1, reactionName = "Test Reaction"}
@@ -50,8 +50,8 @@ testReactionDetails =
     , conditions = [(testAccelerate, testCatalyst)]
     }
 
-toRawDetailsSpec :: Spec
-toRawDetailsSpec = do
+toRawReactionDetailsSpec :: Spec
+toRawReactionDetailsSpec = do
   describe "toRawDetails" $ do
     it "should convert `ReactionDetails` to `RawReactionDetailsMask`" $ do
       let expectedRawReactionMask =
@@ -101,7 +101,7 @@ toRawDetailsSpec = do
                       ]
                 }
             ]
-      result <- toRawDetails testReactionDetails
+      result <- toRawReactionDetails testReactionDetails
       let expectedResult =
             RawDetailsMask
               { rawReactionMask = expectedRawReactionMask

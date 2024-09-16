@@ -31,7 +31,7 @@ import           Models                        (HealthCheck (HealthCheck),
                                                 RawReactionDetails (..),
                                                 RawReactionDetailsMask (..),
                                                 ReactionID, ReactionNode)
-import           Prelude                       hiding (head, id)
+import           Prelude                       hiding (id)
 
 newtype GraphElemError =
   GraphElemError Text
@@ -39,14 +39,19 @@ newtype GraphElemError =
 
 instance Exception GraphElemError
 
--- | Safe `head` which throws `GraphElemError` if list is empty
-head :: [a] -> IO a
-head []    = throwIO (GraphElemError "Expected non-empty list")
-head (x:_) = return x
 
--- | Unpack the list of `result` records with `key`
+-- | `headIO` which throws `GraphElemError` if list is empty,
+-- including the key in the error message
+headIO :: Text -> [a] -> IO a
+headIO key [] =
+  throwIO
+    (GraphElemError $
+     "Expected non-empty Record list retrieved by the key: \"" <> key <> "\"")
+headIO _ (x:_) = return x
+
+-- | Unpack the list of `result` records with the `key`
 unrecord :: RecordValue b => [Record] -> Text -> BoltActionT IO b
-unrecord result key = (lift . head) =<< forM result (`at` key)
+unrecord result key = (lift . headIO key) =<< forM result (`at` key)
 
 withNeo4j :: forall b. BoltActionT IO b -> IO b
 withNeo4j action = do
@@ -60,6 +65,17 @@ checkNeo4j = do
   _ <- query "RETURN 1" `catchError` throw
   return $ HealthCheck "Neo4j is alive" "Server is alive"
 
+-- | Fetches reaction details by its identifier from the Neo4j database.
+-- Returns a tuple containing @RawReactionDetails@ and optionally @MechanismNode@.
+--
+-- Parameters:
+-- - @ReactionID@ - the unique identifier of the reaction.
+--
+-- Returns:
+-- - @BoltActionT IO (RawReactionDetails, Maybe MechanismNode)@
+--
+-- Exceptions:
+-- - @GraphElemError@ if the expected nodes or relationships are not found.
 fetchReaction ::
      ReactionID -> BoltActionT IO (RawReactionDetails, Maybe MechanismNode)
 fetchReaction id = do
@@ -99,12 +115,35 @@ fetchReaction id = do
         }
     , rawMechanism)
 
+-- | Creates a new reaction in the Neo4j database using the provided details.
+-- The function generates a query to insert a reaction node and its related 
+-- nodes and relationships.
+--
+-- Parameters:
+-- - @RawReactionDetailsMask@ - the mask containing reaction details such as reagents, products, and catalysts.
+--
+-- Returns:
+-- - @BoltActionT IO ReactionNode@ - the created reaction node.
+--
+-- Exceptions:
+-- - @GraphElemError@ if the reaction creation fails.
 createReaction :: RawReactionDetailsMask -> BoltActionT IO ReactionNode
 createReaction details = do
   result <- query $ createReactionQueryFrom details
   (rawReaction :: Node) <- unrecord result "reaction"
   return rawReaction
 
+-- | Removes a reaction and its related nodes (catalysts, products, reagents)
+-- from the Neo4j database, based on the given @ReactionID@.
+--
+-- Parameters:
+-- - @ReactionID@ - the unique identifier of the reaction to be deleted.
+--
+-- Returns:
+-- - @BoltActionT IO ReactionID@ - the ID of the removed reaction.
+--
+-- Exceptions:
+-- - @GraphElemError@ if the reaction or its related nodes/relationships are not found.
 removeReaction :: ReactionID -> BoltActionT IO ReactionID
 removeReaction id = do
   _ <-
@@ -117,6 +156,18 @@ removeReaction id = do
       (props [("id", I id)])
   return id
 
+-- | Finds the shortest path between two molecules based on their IDs.
+-- The path consists of reactions and relationships between products and reagents.
+--
+-- Parameters:
+-- - @startId@ :: @MoleculeID@ - the starting molecule's ID.
+-- - @endId@ :: @MoleculeID@ - the ending molecule's ID.
+--
+-- Returns:
+-- - @BoltActionT IO Path@ - the shortest path consisting of reactions and molecule relationships.
+--
+-- Exceptions:
+-- - @GraphElemError@ if no path is found between the two molecules.
 findPath :: MoleculeID -> MoleculeID -> BoltActionT IO Path
 findPath startId endId = do
   result <-
@@ -130,6 +181,17 @@ findPath startId endId = do
   (rawPath :: Path) <- unrecord result "path"
   return rawPath
 
+-- | Fetches mechanism details by its identifier from the Neo4j database.
+-- The function retrieves the mechanism, its stages, participants, and relationships.
+--
+-- Parameters:
+-- - @MechanismID@ - the unique identifier of the mechanism.
+--
+-- Returns:
+-- - @BoltActionT IO RawMechanismDetails@ - the details of the mechanism, including stages and participants.
+--
+-- Exceptions:
+-- - @GraphElemError@ if the mechanism or its related nodes/relationships are not found.
 fetchMechanism :: MechanismID -> BoltActionT IO RawMechanismDetails
 fetchMechanism id = do
   result <-

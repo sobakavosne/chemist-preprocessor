@@ -1,8 +1,8 @@
 {-# LANGUAGE NamedFieldPuns      #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Domain.Converter.Units.ToRawDetails
-  ( toRawDetails
+module Domain.Converter.Units.ToRawReactionDetails
+  ( toRawReactionDetails
   ) where
 
 import           Control.Monad              (forM)
@@ -17,12 +17,12 @@ import           Models                     (Interactant (..), NodeMask,
 def' :: Default a => [a] -> [a]
 def' details = bool details [def] $ null details
 
-toRawDetails :: ReactionDetails -> IO RawReactionDetailsMask
-toRawDetails ReactionDetails { reaction
-                             , inboundReagents
-                             , outboundProducts
-                             , conditions
-                             } = do
+toRawReactionDetails :: ReactionDetails -> IO RawReactionDetailsMask
+toRawReactionDetails ReactionDetails { reaction
+                                     , inboundReagents
+                                     , outboundProducts
+                                     , conditions
+                                     } = do
   let (inbound, reagents)           = unzip inboundReagents
   let (outbound, products)          = unzip outboundProducts
   let (accelerate, catalysts)       = unzip conditions

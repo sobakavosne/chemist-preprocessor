@@ -1,7 +1,6 @@
 {-# LANGUAGE DeriveGeneric  #-}
-{-# LANGUAGE InstanceSigs   #-}
-{-# OPTIONS_GHC -Wno-name-shadowing #-}
 {-# LANGUAGE NamedFieldPuns #-}
+{-# OPTIONS_GHC -Wno-name-shadowing #-}
 
 module Models where
 
@@ -15,9 +14,21 @@ import           Data.Text        (Text)
 import           Database.Bolt    (Node, Relationship, Value)
 import           GHC.Generics     (Generic)
 
-type ReactionId = Int
+type ReactionID = Int
 
+type MechanismID = Int
+
+type MoleculeID = Int
+
+type CatalystID = Int
+
+type StageID = Int
+
+-- | Represents a node in a reaction graph
 type ReactionNode = Node
+
+-- | Represents a node in a mechanism graph
+type MechanismNode = Node
 
 data Interactant
   = IAccelerate ACCELERATE
@@ -63,7 +74,7 @@ instance FromJSON PathMask
 
 data Molecule =
   Molecule
-    { moleculeId        :: Int
+    { moleculeId        :: MoleculeID
     , moleculeSmiles    :: String
     , moleculeIupacName :: String
     }
@@ -75,7 +86,7 @@ instance ToJSON Molecule
 
 data Reaction =
   Reaction
-    { reactionId   :: Int
+    { reactionId   :: ReactionID
     , reactionName :: String
     }
   deriving (Show, Generic, Eq)
@@ -86,7 +97,7 @@ instance ToJSON Reaction
 
 data Catalyst =
   Catalyst
-    { catalystId     :: Int
+    { catalystId     :: CatalystID
     , catalystSmiles :: String
     , catalystName   :: Maybe String
     }
@@ -157,7 +168,7 @@ instance ToJSON REAGENT_IN
 
 data Mechanism =
   Mechanism
-    { mechanismId               :: Int
+    { mechanismId               :: MechanismID
     , mechanismName             :: String
     , mechanismType             :: String
     , mechanismActivationEnergy :: Float
@@ -180,7 +191,7 @@ instance ToJSON FOLLOW
 
 data Stage =
   Stage
-    { stageOrder       :: Int
+    { stageOrder       :: StageID
     , stageName        :: String
     , stageDescription :: String
     , stageProducts    :: [String]
@@ -277,3 +288,14 @@ data ProcessDetails =
 instance FromJSON ProcessDetails
 
 instance ToJSON ProcessDetails
+
+data HealthCheck =
+  HealthCheck
+    { status  :: String
+    , message :: String
+    }
+  deriving (Show, Generic)
+
+instance FromJSON HealthCheck
+
+instance ToJSON HealthCheck

@@ -36,6 +36,8 @@ library
   import:           shared-deps
   exposed-modules:
     API.Endpoints
+    API.Error
+    API.Logger
     API.Server
     Domain.Converter.Converter
     Domain.Converter.Helpers
@@ -45,8 +47,8 @@ library
     Domain.Converter.Units.ToMechanismDetailsSpec
     Domain.Converter.Units.ToPath
     Domain.Converter.Units.ToPathSpec
-    Domain.Converter.Units.ToRawDetails
-    Domain.Converter.Units.ToRawDetailsSpec
+    Domain.Converter.Units.ToRawReactionDetails
+    Domain.Converter.Units.ToRawReactionDetailsSpec
     Domain.Converter.Units.ToReaction
     Domain.Converter.Units.ToReactionDetails
     Domain.Converter.Units.ToReactionDetailsSpec

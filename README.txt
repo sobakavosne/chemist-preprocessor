@@ -31,6 +31,14 @@
    • Any reaction has conditions (temperature and pressure) and should be supplied with 
      a catalyst or an empty catalyst node since the "conditions" element is a bond
 
+   • The standard migration batch contains 20 reactions available by IDs [1..20]
+
+   • Currently, only the 4th process is available and contains a mechanism
+
+   • After running the Dockerized application, the Neo4j GUI is available at 
+     http://localhost:7474/browser/
+
+
 :Queries
    
    •  Ethene hydration mechanism is available by ID=4 (the only mechanism added). The full

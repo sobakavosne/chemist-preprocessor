@@ -12,21 +12,25 @@ module Infrastructure.Database
   , fetchMechanism
   ) where
 
-import           Control.Exception             (Exception, bracket, throwIO)
+import           Control.Exception             (Exception, bracket, throw,
+                                                throwIO, try)
 import           Control.Monad.Except          (MonadError (catchError),
                                                 MonadTrans (lift), forM)
 import           Data.Text                     (Text)
-import           Database.Bolt                 (BoltActionT, BoltError, Node,
-                                                Path, Record, RecordValue,
-                                                Relationship, Value (I), at,
-                                                close, connect, props, query,
-                                                queryP, run)
+import           Database.Bolt                 (BoltActionT, Node, Path, Record,
+                                                RecordValue, Relationship,
+                                                Value (I), at, close, connect,
+                                                props, query, queryP, run)
+import           GHC.Exception                 (SomeException)
 import           Infrastructure.Config         (loadBoltCfg)
 import           Infrastructure.QueryGenerator (createReactionQueryFrom)
-import           Models                        (RawMechanismDetails (..),
+import           Models                        (HealthCheck (HealthCheck),
+                                                MechanismID, MechanismNode,
+                                                MoleculeID,
+                                                RawMechanismDetails (..),
                                                 RawReactionDetails (..),
                                                 RawReactionDetailsMask (..),
-                                                ReactionNode)
+                                                ReactionID, ReactionNode)
 import           Prelude                       hiding (head, id)
 
 newtype GraphElemError =
@@ -44,20 +48,20 @@ head (x:_) = return x
 unrecord :: RecordValue b => [Record] -> Text -> BoltActionT IO b
 unrecord result key = (lift . head) =<< forM result (`at` key)
 
-withNeo4j :: BoltActionT IO b -> IO b
+withNeo4j :: forall b. BoltActionT IO b -> IO b
 withNeo4j action = do
   cfg <- loadBoltCfg
-  bracket (connect cfg) close (`run` action)
+  result <-
+    try (bracket (connect cfg) close (`run` action)) :: IO (Either SomeException b)
+  either throwIO return result
 
-checkNeo4j :: BoltActionT IO Bool
+checkNeo4j :: BoltActionT IO HealthCheck
 checkNeo4j = do
-  result <- query "RETURN 1" `catchError` handleException
-  return $ not (null result)
-  where
-    handleException :: BoltError -> BoltActionT IO [a]
-    handleException _ = return []
+  _ <- query "RETURN 1" `catchError` throw
+  return $ HealthCheck "Neo4j is alive" "Server is alive"
 
-fetchReaction :: Int -> BoltActionT IO RawReactionDetails
+fetchReaction ::
+     ReactionID -> BoltActionT IO (RawReactionDetails, Maybe MechanismNode)
 fetchReaction id = do
   result <-
     queryP
@@ -65,7 +69,9 @@ fetchReaction id = do
              \(reaction:Reaction { id: $id })<-[accelerate:ACCELERATE]-(catalyst:Catalyst), \
              \(reaction)-[product_from:PRODUCT_FROM]->(product:Molecule), \
              \(reaction)<-[reagent_in:REAGENT_IN]-(reagent:Molecule) \
+             \OPTIONAL MATCH (reaction)-[follow:FOLLOW]->(mechanism:Mechanism) \
              \RETURN DISTINCT reaction, \
+             \  mechanism, \
              \  COLLECT(DISTINCT accelerate) AS accelerates, \
              \  COLLECT(DISTINCT catalyst) AS catalysts, \
              \  COLLECT(DISTINCT product) AS products, \
@@ -80,24 +86,26 @@ fetchReaction id = do
   (rawOutbound   :: [Relationship]) <- unrecord result "product_froms"
   (rawAccelerate :: [Relationship]) <- unrecord result "accelerates"
   (rawCatalysts  :: [Node])         <- unrecord result "catalysts"
+  (rawMechanism  :: Maybe Node)     <- unrecord result "mechanism"
   return
-    RawReactionDetails
-      { rawReaction
-      , rawReagents
-      , rawProducts
-      , rawInbound
-      , rawOutbound
-      , rawAccelerate
-      , rawCatalysts
-      }
+    ( RawReactionDetails
+        { rawReaction
+        , rawReagents
+        , rawProducts
+        , rawInbound
+        , rawOutbound
+        , rawAccelerate
+        , rawCatalysts
+        }
+    , rawMechanism)
 
-createReaction :: RawReactionDetailsMask -> BoltActionT IO Node
+createReaction :: RawReactionDetailsMask -> BoltActionT IO ReactionNode
 createReaction details = do
   result <- query $ createReactionQueryFrom details
   (rawReaction :: Node) <- unrecord result "reaction"
   return rawReaction
 
-removeReaction :: Int -> BoltActionT IO Int
+removeReaction :: ReactionID -> BoltActionT IO ReactionID
 removeReaction id = do
   _ <-
     queryP
@@ -109,7 +117,7 @@ removeReaction id = do
       (props [("id", I id)])
   return id
 
-findPath :: Int -> Int -> BoltActionT IO Path
+findPath :: MoleculeID -> MoleculeID -> BoltActionT IO Path
 findPath startId endId = do
   result <-
     queryP
@@ -122,7 +130,7 @@ findPath startId endId = do
   (rawPath :: Path) <- unrecord result "path"
   return rawPath
 
-fetchMechanism :: Int -> BoltActionT IO (RawMechanismDetails, ReactionNode)
+fetchMechanism :: MechanismID -> BoltActionT IO RawMechanismDetails
 fetchMechanism id = do
   result <-
     queryP
@@ -143,8 +151,6 @@ fetchMechanism id = do
   (rawInclude      :: [Relationship]) <- unrecord result "includes"
   (rawInteractants :: [Node])         <- unrecord result "participants"
   (rawFollow       :: Relationship)   <- unrecord result "follow"
-  (rawReaction     :: Node)           <- unrecord result "reaction"
   return
-    ( RawMechanismDetails
-        {rawMechanism, rawStages, rawInclude, rawInteractants, rawFollow}
-    , rawReaction)
+    RawMechanismDetails
+      {rawMechanism, rawStages, rawInclude, rawInteractants, rawFollow}

@@ -22,7 +22,7 @@ import           Test.Hspec                               (Spec, describe, it,
 
 toReactionDetailsSpec :: Spec
 toReactionDetailsSpec = do
-  describe "toDetails" $ do
+  describe "toReactionDetails" $ do
     it "should convert `RawReactionDetails` to `ReactionDetails`" $ do
       let mockMechanismNode =
             Node 100 ["Mechanism"] $

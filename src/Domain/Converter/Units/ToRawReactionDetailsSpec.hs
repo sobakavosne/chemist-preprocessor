@@ -52,7 +52,7 @@ testReactionDetails =
 
 toRawReactionDetailsSpec :: Spec
 toRawReactionDetailsSpec = do
-  describe "toRawDetails" $ do
+  describe "toRawReactionDetails" $ do
     it "should convert `ReactionDetails` to `RawReactionDetailsMask`" $ do
       let expectedRawReactionMask =
             NodeMask

@@ -103,7 +103,7 @@ toRawReactionDetailsSpec = do
             ]
       result <- toRawReactionDetails testReactionDetails
       let expectedResult =
-            RawDetailsMask
+            RawReactionDetailsMask
               { rawReactionMask = expectedRawReactionMask
               , rawReagentsMask = expectedRawReagentsMask
               , rawProductsMask = expectedRawProductsMask

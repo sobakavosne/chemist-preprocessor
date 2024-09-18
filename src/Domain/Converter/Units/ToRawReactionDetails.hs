@@ -34,7 +34,7 @@ toRawReactionDetails ReactionDetails { reaction
   (rawAccelerateMask :: [RelMask])  <- forM (def' accelerate) (exactRaw . IAccelerate)
   (rawCatalystsMask  :: [NodeMask]) <- forM (def' catalysts) (exactRaw . ICatalyst)
   return
-    RawDetailsMask
+    RawReactionDetailsMask
       { rawReactionMask
       , rawReagentsMask
       , rawProductsMask

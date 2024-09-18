@@ -39,14 +39,13 @@ newtype GraphElemError =
 
 instance Exception GraphElemError
 
-
 -- | `headIO` which throws `GraphElemError` if list is empty,
 -- including the key in the error message
 headIO :: Text -> [a] -> IO a
 headIO key [] =
   throwIO
     (GraphElemError $
-     "Expected non-empty Record list retrieved by the key: \"" <> key <> "\"")
+     "Expected non-empty Record list retrieved by the key: " <> key)
 headIO _ (x:_) = return x
 
 -- | Unpack the list of `result` records with the `key`

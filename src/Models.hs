@@ -138,11 +138,10 @@ instance FromJSON PRODUCT_FROM
 
 instance ToJSON PRODUCT_FROM
 
-data ACCELERATE
-  -- | `def` - the default ACCELERATE value corresponds to Standard Temperature and Pressure (STP):
-  -- - temperature = 273.15 K (Kelvin)
-  -- - pressure = 101.325 kPa (kilopascals)
-      =
+-- | `def` - the default value for @ACCELERATE@ corresponds to Standard Temperature and Pressure (STP):
+--   - `temperature` = 273.15 K (Kelvin)
+--   - `pressure`    = 101.325 kPa (kilopascals)
+data ACCELERATE =
   ACCELERATE
     { temperature :: [Float]
     , pressure    :: [Float]
@@ -267,7 +266,7 @@ data RawReactionDetails =
   deriving (Show, Eq)
 
 data RawReactionDetailsMask =
-  RawDetailsMask
+  RawReactionDetailsMask
     { rawReactionMask   :: NodeMask
     , rawReagentsMask   :: [NodeMask]
     , rawProductsMask   :: [NodeMask]

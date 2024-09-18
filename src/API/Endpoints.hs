@@ -6,20 +6,22 @@ module API.Endpoints
   , server
   ) where
 
-import           API.Error              (healthError, mismatchError,
-                                         serviceError, toEither)
-import           API.Logger             (log)
-import           Control.Exception      (try)
-import           Control.Monad.IO.Class (MonadIO (liftIO))
-import           Domain.Service         (deleteReaction, getHealth,
-                                         getMechanism, getPath, getReaction,
-                                         postReaction)
-import           Models                 (HealthCheck (..), MechanismDetails,
-                                         MechanismID, MoleculeID, PathMask,
-                                         ProcessDetails (..), Reaction,
-                                         ReactionDetails, ReactionID)
-import           Prelude                hiding (id, log)
-import qualified Servant                as S
+import           API.Error                (healthError, mismatchError,
+                                           serviceError, toEither)
+import           API.Logger               (log)
+import           Control.Concurrent.Async (async, wait)
+import           Control.Exception        (try)
+import           Control.Monad            ((<=<))
+import           Control.Monad.IO.Class   (MonadIO (liftIO))
+import           Domain.Service           (deleteReactionAsync, getHealthAsync,
+                                           getMechanismAsync, getPathAsync,
+                                           getReactionAsync, postReactionAsync)
+import           Models                   (HealthCheck (..), MechanismDetails,
+                                           MechanismID, MoleculeID, PathMask,
+                                           ProcessDetails (..), Reaction,
+                                           ReactionDetails, ReactionID)
+import           Prelude                  hiding (id, log)
+import qualified Servant                  as S
 
 -- | Alias for **Content-Type** header
 type Content = S.Headers '[ S.Header "Content-Type" String]
@@ -46,7 +48,7 @@ json = "application/json"
 -- - @S.Handler (Content HealthCheck)@
 healthHandler :: S.Handler (Content HealthCheck)
 healthHandler = do
-  result <- (liftIO . try) getHealth
+  result <- liftIO . try $ wait =<< async getHealthAsync
   (liftIO . log) result
   either healthError (return . S.addHeader json) result
 
@@ -60,7 +62,7 @@ healthHandler = do
 -- - @S.Handler (Content ReactionDetails)@
 getReactionHandler :: ReactionID -> S.Handler (Content ReactionDetails)
 getReactionHandler id = do
-  result <- (liftIO . try . fmap fst . getReaction) id
+  result <- liftIO . try $ wait =<< (async . fmap fst . getReactionAsync) id
   (liftIO . log) result
   either serviceError (return . S.addHeader json) result
 
@@ -68,15 +70,15 @@ getReactionHandler id = do
 -- a `JSON` response with the created @Reaction@.
 --
 -- Parameters:
--- - @ReactionDetails@ - details of the reaction to be created. 
---   Note: @ACCELERATE@ and @Catalyst@ are optional. If they are not provided, 
+-- - @ReactionDetails@ - details of the reaction to be created.
+--   Note: @ACCELERATE@ and @Catalyst@ are optional. If they are not provided,
 --   default values will be used.
 --
 -- Returns:
 -- - @S.Handler (Content Reaction)@
 postReactionHandler :: ReactionDetails -> S.Handler (Content Reaction)
 postReactionHandler details = do
-  result <- (liftIO . try . postReaction) details
+  result <- liftIO . try $ wait =<< (async . postReactionAsync) details
   (liftIO . log) result
   either serviceError (return . S.addHeader json) result
 
@@ -90,7 +92,7 @@ postReactionHandler details = do
 -- - @S.Handler (Content ReactionID)@
 deleteReactionHandler :: ReactionID -> S.Handler (Content ReactionID)
 deleteReactionHandler id = do
-  result <- (liftIO . try . deleteReaction) id
+  result <- liftIO . try $ wait =<< (async . deleteReactionAsync) id
   (liftIO . log) result
   either serviceError (return . S.addHeader json) result
 
@@ -105,7 +107,7 @@ deleteReactionHandler id = do
 -- - @S.Handler (Content PathMask)@
 getPathHandler :: MoleculeID -> MoleculeID -> S.Handler (Content PathMask)
 getPathHandler start end = do
-  result <- (liftIO . try . getPath start) end
+  result <- liftIO . try $ wait =<< async (getPathAsync start end)
   (liftIO . log) result
   either serviceError (return . S.addHeader json) result
 
@@ -119,7 +121,7 @@ getPathHandler start end = do
 -- - @S.Handler (Content MechanismDetails)@
 getMechanismHandler :: MechanismID -> S.Handler (Content MechanismDetails)
 getMechanismHandler id = do
-  result <- (liftIO . try . getMechanism) id
+  result <- liftIO . try $ wait =<< (async . getMechanismAsync) id
   (liftIO . log) result
   either serviceError (return . S.addHeader json) result
 
@@ -133,9 +135,12 @@ getMechanismHandler id = do
 -- - @S.Handler (Content ProcessDetails)@
 getProcessDetailsHandler :: ReactionID -> S.Handler (Content ProcessDetails)
 getProcessDetailsHandler reactionId = do
-  reaction <- (liftIO . try . getReaction) reactionId
+  reaction <- liftIO . try $ wait =<< (async . getReactionAsync) reactionId
   mechanism <-
-    either mismatchError (traverse (liftIO . try . getMechanism) . snd) reaction
+    either
+      mismatchError
+      (traverse (liftIO . try . (wait <=< (async . getMechanismAsync))) . snd)
+      reaction
   let result = (ProcessDetails . fst <$> reaction) <*> toEither mechanism
   (liftIO . log) result
   either serviceError (return . S.addHeader json) result

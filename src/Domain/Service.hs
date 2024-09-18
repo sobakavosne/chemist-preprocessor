@@ -1,10 +1,10 @@
 module Domain.Service
-  ( getPath
-  , getHealth
-  , getReaction
-  , getMechanism
-  , postReaction
-  , deleteReaction
+  ( getPathAsync
+  , getHealthAsync
+  , getReactionAsync
+  , getMechanismAsync
+  , postReactionAsync
+  , deleteReactionAsync
   ) where
 
 import           Control.Concurrent.Async   (async, wait)
@@ -21,16 +21,16 @@ import           Models                     (HealthCheck, MechanismDetails,
                                              ReactionID)
 import           Prelude                    hiding (id)
 
--- | Fetch the health status of the Neo4j database.
+-- | Asynchronously fetch the health status of the Neo4j database.
 -- Uses the `withNeo4j` wrapper to establish a connection
 -- and execute the health check query.
 --
 -- Returns:
 -- - @HealthCheck@ containing the status information of the database.
-getHealth :: IO HealthCheck
-getHealth = wait =<< (async . withNeo4j) checkNeo4j
+getHealthAsync :: IO HealthCheck
+getHealthAsync = wait =<< (async . withNeo4j) checkNeo4j
 
--- | Fetches the details of a reaction based on its unique @ReactionID@.
+-- | Asynchronously fetches the details of a reaction based on its unique @ReactionID@.
 -- Converts the raw reaction data retrieved from the database into
 -- @ReactionDetails@ format.
 --
@@ -39,11 +39,11 @@ getHealth = wait =<< (async . withNeo4j) checkNeo4j
 --
 -- Returns:
 -- - A tuple of @ReactionDetails@ and an optional @MechanismID@, if a mechanism is associated.
-getReaction :: ReactionID -> IO (ReactionDetails, Maybe MechanismID)
-getReaction id =
+getReactionAsync :: ReactionID -> IO (ReactionDetails, Maybe MechanismID)
+getReactionAsync id =
   toReactionDetails =<< wait =<< (async . withNeo4j . fetchReaction) id
 
--- | Creates a new reaction in the database.
+-- | Asynchronously creates a new reaction in the database.
 -- Converts the given @ReactionDetails@ to raw details before calling the
 -- database function to store the reaction.
 --
@@ -52,12 +52,12 @@ getReaction id =
 --
 -- Returns:
 -- - @Reaction@ - the created reaction with its unique ID.
-postReaction :: ReactionDetails -> IO Reaction
-postReaction details =
+postReactionAsync :: ReactionDetails -> IO Reaction
+postReactionAsync details =
   toReaction =<<
   wait =<< async . withNeo4j . createReaction =<< toRawReactionDetails details
 
--- | Deletes a reaction from the database based on its @ReactionID@.
+-- | Asynchronously deletes a reaction from the database based on its @ReactionID@.
 -- Uses `withNeo4j` to execute the delete operation.
 --
 -- Parameters:
@@ -65,10 +65,10 @@ postReaction details =
 --
 -- Returns:
 -- - @ReactionID@ of the deleted reaction.
-deleteReaction :: ReactionID -> IO ReactionID
-deleteReaction id = wait =<< (async . withNeo4j . removeReaction) id
+deleteReactionAsync :: ReactionID -> IO ReactionID
+deleteReactionAsync id = wait =<< (async . withNeo4j . removeReaction) id
 
--- | Finds the shortest path between two molecules based on their @MoleculeID@s.
+-- | Asynchronously finds the shortest path between two molecules based on their @MoleculeID@s.
 -- Fetches the path from the database and converts it to a @PathMask@.
 --
 -- Parameters:
@@ -77,10 +77,10 @@ deleteReaction id = wait =<< (async . withNeo4j . removeReaction) id
 --
 -- Returns:
 -- - @PathMask@ representing the shortest path between the two molecules.
-getPath :: MoleculeID -> MoleculeID -> IO PathMask
-getPath start end = toPath =<< wait =<< (async . withNeo4j) (findPath start end)
+getPathAsync :: MoleculeID -> MoleculeID -> IO PathMask
+getPathAsync start end = toPath =<< wait =<< (async . withNeo4j) (findPath start end)
 
--- | Fetches the details of a mechanism based on its @MechanismID@.
+-- | Asynchronously  fetches the details of a mechanism based on its @MechanismID@.
 -- Converts the raw mechanism data into @MechanismDetails@.
 --
 -- Parameters:
@@ -88,6 +88,6 @@ getPath start end = toPath =<< wait =<< (async . withNeo4j) (findPath start end)
 --
 -- Returns:
 -- - @MechanismDetails@ representing the mechanism and its stages.
-getMechanism :: MechanismID -> IO MechanismDetails
-getMechanism id =
+getMechanismAsync :: MechanismID -> IO MechanismDetails
+getMechanismAsync id =
   toMechanismDetails =<< wait =<< (async . withNeo4j . fetchMechanism) id

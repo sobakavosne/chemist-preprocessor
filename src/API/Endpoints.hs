@@ -68,7 +68,9 @@ getReactionHandler id = do
 -- a `JSON` response with the created @Reaction@.
 --
 -- Parameters:
--- - @ReactionDetails@ - details of the reaction to be created
+-- - @ReactionDetails@ - details of the reaction to be created. 
+--   Note: @ACCELERATE@ and @Catalyst@ are optional. If they are not provided, 
+--   default values will be used.
 --
 -- Returns:
 -- - @S.Handler (Content Reaction)@

@@ -9,6 +9,7 @@ category:      Database
 common shared-deps
   build-depends:
     , aeson
+    , async
     , base
     , bytestring
     , case-insensitive

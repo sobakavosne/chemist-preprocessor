@@ -7,6 +7,7 @@ module Domain.Service
   , deleteReaction
   ) where
 
+import           Control.Concurrent.Async   (async, wait)
 import           Domain.Converter.Converter (toMechanismDetails, toPath,
                                              toRawReactionDetails, toReaction,
                                              toReactionDetails)
@@ -27,7 +28,7 @@ import           Prelude                    hiding (id)
 -- Returns:
 -- - @HealthCheck@ containing the status information of the database.
 getHealth :: IO HealthCheck
-getHealth = withNeo4j checkNeo4j
+getHealth = wait =<< (async . withNeo4j) checkNeo4j
 
 -- | Fetches the details of a reaction based on its unique @ReactionID@.
 -- Converts the raw reaction data retrieved from the database into
@@ -39,7 +40,8 @@ getHealth = withNeo4j checkNeo4j
 -- Returns:
 -- - A tuple of @ReactionDetails@ and an optional @MechanismID@, if a mechanism is associated.
 getReaction :: ReactionID -> IO (ReactionDetails, Maybe MechanismID)
-getReaction id = toReactionDetails =<< withNeo4j (fetchReaction id)
+getReaction id =
+  toReactionDetails =<< wait =<< (async . withNeo4j . fetchReaction) id
 
 -- | Creates a new reaction in the database.
 -- Converts the given @ReactionDetails@ to raw details before calling the
@@ -51,7 +53,9 @@ getReaction id = toReactionDetails =<< withNeo4j (fetchReaction id)
 -- Returns:
 -- - @Reaction@ - the created reaction with its unique ID.
 postReaction :: ReactionDetails -> IO Reaction
-postReaction details = toReaction =<< withNeo4j . createReaction =<< toRawReactionDetails details
+postReaction details =
+  toReaction =<<
+  wait =<< async . withNeo4j . createReaction =<< toRawReactionDetails details
 
 -- | Deletes a reaction from the database based on its @ReactionID@.
 -- Uses `withNeo4j` to execute the delete operation.
@@ -62,7 +66,7 @@ postReaction details = toReaction =<< withNeo4j . createReaction =<< toRawReacti
 -- Returns:
 -- - @ReactionID@ of the deleted reaction.
 deleteReaction :: ReactionID -> IO ReactionID
-deleteReaction id = withNeo4j (removeReaction id)
+deleteReaction id = wait =<< (async . withNeo4j . removeReaction) id
 
 -- | Finds the shortest path between two molecules based on their @MoleculeID@s.
 -- Fetches the path from the database and converts it to a @PathMask@.
@@ -74,15 +78,16 @@ deleteReaction id = withNeo4j (removeReaction id)
 -- Returns:
 -- - @PathMask@ representing the shortest path between the two molecules.
 getPath :: MoleculeID -> MoleculeID -> IO PathMask
-getPath start end = toPath =<< withNeo4j (findPath start end)
+getPath start end = toPath =<< wait =<< (async . withNeo4j) (findPath start end)
 
 -- | Fetches the details of a mechanism based on its @MechanismID@.
 -- Converts the raw mechanism data into @MechanismDetails@.
--- 
+--
 -- Parameters:
 -- - @MechanismID@ - the unique identifier of the mechanism.
--- 
+--
 -- Returns:
 -- - @MechanismDetails@ representing the mechanism and its stages.
 getMechanism :: MechanismID -> IO MechanismDetails
-getMechanism id = toMechanismDetails =<< withNeo4j (fetchMechanism id)
+getMechanism id =
+  toMechanismDetails =<< wait =<< (async . withNeo4j . fetchMechanism) id

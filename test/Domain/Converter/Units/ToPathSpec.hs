@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Domain.Converter.Units.ToPathSpec
-  ( toPathSpec
+  ( spec
   ) where
 
 import           Database.Bolt                 (Node (Node), Path (Path),
@@ -13,8 +13,8 @@ import           Models                        (Interactant (..), Molecule (..),
                                                 REAGENT_IN (REAGENT_IN))
 import           Test.Hspec                    (Spec, describe, it, shouldBe)
 
-toPathSpec :: Spec
-toPathSpec = do
+spec :: Spec
+spec = do
   describe "toPath" $ do
     it "should convert Bolt `Path` to a `PathMask`" $ do
       let mockNode1 =

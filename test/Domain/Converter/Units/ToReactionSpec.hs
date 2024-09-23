@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Domain.Converter.Units.ToReactionSpec
-  ( toReactionSpec
+  ( spec
   ) where
 
 import           Database.Bolt                     (Node (..), Value (..),
@@ -12,8 +12,8 @@ import           Models                            (Reaction (..))
 import           Test.Hspec                        (Spec, describe, it,
                                                     shouldBe)
 
-toReactionSpec :: Spec
-toReactionSpec = do
+spec :: Spec
+spec = do
   describe "toReaction" $ do
     it "should convert a valid Node to a Reaction" $ do
       let nodeIdentity = 1

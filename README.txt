@@ -38,7 +38,6 @@
    • After running the Dockerized application, the Neo4j GUI is available at 
      http://localhost:7474/browser/
 
-
 :Queries
    
    •  Ethene hydration mechanism is available by ID=4 (the only mechanism added). The full

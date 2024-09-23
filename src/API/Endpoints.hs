@@ -147,7 +147,9 @@ getProcessDetailsHandler reactionId = do
 
 server :: S.Server API
 server =
-  healthHandler S.:<|> getReactionHandler S.:<|> postReactionHandler S.:<|>
+  healthHandler S.:<|>
+  getReactionHandler S.:<|>
+  postReactionHandler S.:<|>
   deleteReactionHandler S.:<|>
   getPathHandler S.:<|>
   getMechanismHandler S.:<|>

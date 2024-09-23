@@ -20,6 +20,7 @@ common shared-deps
     , fast-logger
     , hasbolt
     , hspec
+    , hspec-discover
     , http-types
     , mtl
     , servant-server
@@ -28,8 +29,6 @@ common shared-deps
     , wai
     , warp
 
-  -- , hasbolt-extras
-  -- , template-haskell
   default-language: Haskell2010
   ghc-options:      -Wall
 
@@ -45,15 +44,10 @@ library
     Domain.Converter.Instances
     Domain.Converter.Type
     Domain.Converter.Units.ToMechanismDetails
-    Domain.Converter.Units.ToMechanismDetailsSpec
     Domain.Converter.Units.ToPath
-    Domain.Converter.Units.ToPathSpec
     Domain.Converter.Units.ToRawReactionDetails
-    Domain.Converter.Units.ToRawReactionDetailsSpec
     Domain.Converter.Units.ToReaction
     Domain.Converter.Units.ToReactionDetails
-    Domain.Converter.Units.ToReactionDetailsSpec
-    Domain.Converter.Units.ToReactionSpec
     Domain.Service
     Infrastructure.Config
     Infrastructure.Database
@@ -75,5 +69,12 @@ test-suite chemist-test
   default-language: Haskell2010
   type:             exitcode-stdio-1.0
   hs-source-dirs:   test
-  main-is:          Test.hs
+  main-is:          Spec.hs
+  other-modules:
+    Domain.Converter.Units.ToMechanismDetailsSpec
+    Domain.Converter.Units.ToPathSpec
+    Domain.Converter.Units.ToRawReactionDetailsSpec
+    Domain.Converter.Units.ToReactionDetailsSpec
+    Domain.Converter.Units.ToReactionSpec
+
   build-depends:    chemist

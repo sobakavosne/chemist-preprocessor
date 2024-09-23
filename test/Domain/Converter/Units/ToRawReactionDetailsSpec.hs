@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Domain.Converter.Units.ToRawReactionDetailsSpec
-  ( toRawReactionDetailsSpec
+  ( spec
   ) where
 
 import           Data.Map                                    (fromList)
@@ -50,8 +50,8 @@ testReactionDetails =
     , conditions = [(testAccelerate, testCatalyst)]
     }
 
-toRawReactionDetailsSpec :: Spec
-toRawReactionDetailsSpec = do
+spec :: Spec
+spec = do
   describe "toRawReactionDetails" $ do
     it "should convert `ReactionDetails` to `RawReactionDetailsMask`" $ do
       let expectedRawReactionMask =

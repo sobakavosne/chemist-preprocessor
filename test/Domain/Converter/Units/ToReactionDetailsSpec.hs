@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Domain.Converter.Units.ToReactionDetailsSpec
-  ( toReactionDetailsSpec
+  ( spec
   ) where
 
 import           Database.Bolt                            (Node (..),
@@ -20,8 +20,8 @@ import           Models                                   (ACCELERATE (..),
 import           Test.Hspec                               (Spec, describe, it,
                                                            shouldBe)
 
-toReactionDetailsSpec :: Spec
-toReactionDetailsSpec = do
+spec :: Spec
+spec = do
   describe "toReactionDetails" $ do
     it "should convert `RawReactionDetails` to `ReactionDetails`" $ do
       let mockMechanismNode =

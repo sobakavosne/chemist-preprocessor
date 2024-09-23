@@ -140,9 +140,6 @@ createReaction details = do
 --
 -- Returns:
 -- - @BoltActionT IO ReactionID@ - the ID of the removed reaction.
---
--- Exceptions:
--- - @GraphElemError@ if the reaction or its related nodes/relationships are not found.
 removeReaction :: ReactionID -> BoltActionT IO ReactionID
 removeReaction id = do
   _ <-

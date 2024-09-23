@@ -5,12 +5,11 @@ module API.Error where
 
 import           Control.Exception     (Exception,
                                         SomeException (SomeException))
-import           Data.Aeson            (FromJSON, ToJSON (toJSON), encode)
+import           Data.Aeson            (ToJSON (toJSON), encode)
 import qualified Data.ByteString.Char8 as BS
 import           Data.Maybe            (fromMaybe)
 import           GHC.Generics          (Generic)
-import           Models                (HealthCheck (HealthCheck),
-                                        MechanismDetails)
+import           Models                (HealthCheck (HealthCheck))
 import           Network.HTTP.Types    (HeaderName, hContentType)
 import qualified Servant               as S
 
@@ -20,8 +19,6 @@ data Error =
     , message :: String
     }
   deriving (Show, Eq, Generic)
-
-instance FromJSON Error
 
 instance ToJSON Error
 
@@ -65,10 +62,8 @@ mismatchError e = do
       , S.errHeaders = headers
       }
 
-toEither ::
-     Maybe (Either SomeException MechanismDetails)
-  -> Either SomeException MechanismDetails
+-- Should avoid such a hack
+toEither :: Maybe (Either SomeException a) -> Either SomeException a
 toEither =
   fromMaybe
-    (Left . SomeException . ServiceError . Error "Service error" $
-     "Empty mechanism graph")
+    (Left . SomeException . ServiceError . Error "Service error" $ "Empty graph")

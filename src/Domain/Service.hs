@@ -54,8 +54,7 @@ getReactionAsync id =
 -- - @Reaction@ - the created reaction with its unique ID.
 postReactionAsync :: ReactionDetails -> IO Reaction
 postReactionAsync details =
-  toReaction =<<
-  wait =<< async . withNeo4j . createReaction =<< toRawReactionDetails details
+  toReaction =<< wait =<< async . withNeo4j . createReaction =<< toRawReactionDetails details
 
 -- | Asynchronously deletes a reaction from the database based on its @ReactionID@.
 -- Uses `withNeo4j` to execute the delete operation.

@@ -14,6 +14,17 @@ import           Models                     (FOLLOW, INCLUDE, Interactant,
                                              Mechanism, MechanismDetails (..),
                                              RawMechanismDetails (..), Stage)
 
+-- | Converts raw mechanism details to a structured @MechanismDetails@ format.
+-- Maps the raw data to more meaningful structures that represent mechanisms,
+-- stages, and interactants.
+--
+-- Parameters:
+-- - @RawMechanismDetails@ containing the raw data of the mechanism,
+-- interactants, included entities, stages, and follow-up information.
+--
+-- Returns:
+-- - @MechanismDetails@ representing the mechanism with its context
+-- and associated stages and interactants.
 toMechanismDetails :: RawMechanismDetails -> IO MechanismDetails
 toMechanismDetails RawMechanismDetails { rawMechanism
                                        , rawInteractants

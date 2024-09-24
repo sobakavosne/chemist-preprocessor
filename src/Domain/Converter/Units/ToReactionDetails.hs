@@ -5,10 +5,9 @@ module Domain.Converter.Units.ToReactionDetails
   ( toReactionDetails
   ) where
 
-import           Control.Monad              (forM)
 import           Domain.Converter.Helpers   (relationOf)
 import           Domain.Converter.Instances ()
-import           Domain.Converter.Type      (Identity, Subject (SNode, SRel),
+import           Domain.Converter.Type      (Elem (SNode, SRel), Identity,
                                              exact)
 import           Models                     (ACCELERATE (..), Catalyst (..),
                                              Mechanism (mechanismId),
@@ -43,12 +42,12 @@ toReactionDetails (RawReactionDetails { rawReaction
                                       , rawCatalysts
                                       }, rawMechanism) = do
   (reaction   :: (Reaction, Identity))        <- (exact . SNode) rawReaction
-  (reagents   :: [(Molecule, Identity)])      <- forM rawReagents (exact . SNode)
-  (products   :: [(Molecule, Identity)])      <- forM rawProducts (exact . SNode)
-  (inbound    :: [(REAGENT_IN, Identity)])    <- forM rawInbound (exact . SRel)
-  (outbound   :: [(PRODUCT_FROM, Identity)])  <- forM rawOutbound (exact . SRel)
-  (catalysts  :: [(Catalyst, Identity)])      <- forM rawCatalysts (exact . SNode)
-  (accelerate :: [(ACCELERATE, Identity)])    <- forM rawAccelerate (exact . SRel)
+  (reagents   :: [(Molecule, Identity)])      <- mapM (exact . SNode) rawReagents
+  (products   :: [(Molecule, Identity)])      <- mapM (exact . SNode) rawProducts
+  (inbound    :: [(REAGENT_IN, Identity)])    <- mapM (exact . SRel) rawInbound
+  (outbound   :: [(PRODUCT_FROM, Identity)])  <- mapM (exact . SRel) rawOutbound
+  (catalysts  :: [(Catalyst, Identity)])      <- mapM (exact . SNode) rawCatalysts
+  (accelerate :: [(ACCELERATE, Identity)])    <- mapM  (exact . SRel) rawAccelerate
   (mechanism  :: Maybe (Mechanism, Identity)) <- traverse (exact . SNode) rawMechanism
   return
     ( ReactionDetails

@@ -16,10 +16,10 @@ import           Data.Text             (Text, pack, unpack)
 import           Database.Bolt         (IsValue (..), Node (..), Path (..),
                                         Relationship (..), URelationship (..),
                                         Value (..), props)
-import           Domain.Converter.Type (ElemInteractant (..), FromValue (..),
+import           Domain.Converter.Type (Elem (SNode, SPath, SRel, SURel),
+                                        ElemInteractant (..), FromValue (..),
                                         Identity (..), InteractantElem (..),
-                                        ParsingError (..),
-                                        Subject (SNode, SPath, SRel, SURel))
+                                        ParsingError (..))
 import           Models                (ACCELERATE (..), Catalyst (..),
                                         FOLLOW (..), INCLUDE (..),
                                         Interactant (..), Mechanism (..),

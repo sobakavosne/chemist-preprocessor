@@ -6,7 +6,7 @@ module Domain.Converter.Units.ToPath
 
 import           Database.Bolt              (Path)
 import           Domain.Converter.Instances ()
-import           Domain.Converter.Type      (Subject (SPath), exact)
+import           Domain.Converter.Type      (Elem (SPath), exact)
 import           Models                     (PathMask)
 
 -- | Converts a raw database @Path@ into a @PathMask@.

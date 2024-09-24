@@ -5,7 +5,6 @@ module Domain.Converter.Units.ToRawReactionDetails
   ( toRawReactionDetails
   ) where
 
-import           Control.Monad              (forM)
 import           Data.Bool                  (bool)
 import           Data.Default               (Default (def))
 import           Domain.Converter.Instances ()
@@ -38,12 +37,12 @@ toRawReactionDetails ReactionDetails { reaction
   let (outbound, products)          = unzip outboundProducts
   let (accelerate, catalysts)       = unzip conditions
   (rawReactionMask   :: NodeMask)   <- (exactRaw . IReaction) reaction
-  (rawReagentsMask   :: [NodeMask]) <- forM reagents (exactRaw . IMolecule)
-  (rawProductsMask   :: [NodeMask]) <- forM products (exactRaw . IMolecule)
-  (rawInboundMask    :: [RelMask])  <- forM inbound (exactRaw . IReagentIn)
-  (rawOutboundMask   :: [RelMask])  <- forM outbound (exactRaw . IProductFrom)
-  (rawAccelerateMask :: [RelMask])  <- forM (def' accelerate) (exactRaw . IAccelerate)
-  (rawCatalystsMask  :: [NodeMask]) <- forM (def' catalysts) (exactRaw . ICatalyst)
+  (rawReagentsMask   :: [NodeMask]) <- mapM (exactRaw . IMolecule) reagents
+  (rawProductsMask   :: [NodeMask]) <- mapM (exactRaw . IMolecule) products
+  (rawInboundMask    :: [RelMask])  <- mapM (exactRaw . IReagentIn) inbound
+  (rawOutboundMask   :: [RelMask])  <- mapM (exactRaw . IProductFrom) outbound
+  (rawAccelerateMask :: [RelMask])  <- mapM (exactRaw . IAccelerate) (def' accelerate)
+  (rawCatalystsMask  :: [NodeMask]) <- mapM (exactRaw . ICatalyst) (def' catalysts)
   return
     RawReactionDetailsMask
       { rawReactionMask

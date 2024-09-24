@@ -5,7 +5,7 @@ module Domain.Converter.Units.ToReaction
   ) where
 
 import           Domain.Converter.Instances ()
-import           Domain.Converter.Type      (Identity, Subject (SNode), exact)
+import           Domain.Converter.Type      (Elem (SNode), Identity, exact)
 import           Models                     (Reaction (..), ReactionNode)
 import           Prelude                    hiding (id)
 

@@ -8,7 +8,7 @@ module Domain.Converter.Units.ToMechanismDetails
 import           Domain.Converter.Helpers   (dropFirst, groupBySecond,
                                              groupConcat, relationOf)
 import           Domain.Converter.Instances ()
-import           Domain.Converter.Type      (Identity, Subject (SNode, SRel),
+import           Domain.Converter.Type      (Elem (SNode, SRel), Identity,
                                              exact)
 import           Models                     (FOLLOW, INCLUDE, Interactant,
                                              Mechanism, MechanismDetails (..),

@@ -16,16 +16,18 @@ import           Models                     (Interactant (..), NodeMask,
 def' :: Default a => [a] -> [a]
 def' details = bool details [def] $ null details
 
--- | Converts a @ReactionDetails@ structure into a @RawReactionDetailsMask@.
+-- | Converts a `ReactionDetails` structure into a `RawReactionDetailsMask`.
 -- Extracts the relevant node and relationship masks from the reaction details,
 -- mapping the interactants (reagents, products, and catalysts) and reaction
 -- conditions into raw representations that are suitable for database storage.
 --
--- Parameters:
--- - @ReactionDetails@ - the details of the reaction, including interactants and conditions.
+-- ==== Parameters
 --
--- Returns:
--- - @RawReactionDetailsMask@ representing the raw version of reaction details
+-- * `ReactionDetails` - the details of the reaction, including interactants and conditions.
+--
+-- ==== Returns
+--
+-- * `RawReactionDetailsMask` representing the raw version of reaction details
 -- for database operations.
 toRawReactionDetails :: ReactionDetails -> IO RawReactionDetailsMask
 toRawReactionDetails ReactionDetails { reaction

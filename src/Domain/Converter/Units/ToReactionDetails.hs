@@ -19,16 +19,18 @@ import           Models                     (ACCELERATE (..), Catalyst (..),
                                              ReactionDetails (..))
 
 -- | Converts raw reaction details retrieved from the database into a structured
---   format of @ReactionDetails@.
+--   format of `ReactionDetails`.
 --   This function processes the reaction, reagents, products, inbound and outbound
 --   relationships, catalysts, and acceleration factors, and also processes an optional
 --   mechanism if one is associated with the reaction.
 --
--- Parameters:
--- - @(RawReactionDetails, Maybe MechanismNode)@ - The raw reaction details and optional mechanism node.
+-- ==== Parameters
 --
--- Returns:
--- - A tuple of @ReactionDetails@ and an optional @MechanismID@, representing the
+-- * @(RawReactionDetails, Maybe MechanismNode)@ - The raw reaction details and optional mechanism node.
+--
+-- ==== Returns
+--
+-- * A tuple of `ReactionDetails` and an optional `MechanismID`, representing the
 --   reaction's details and an associated mechanism ID, if applicable.
 toReactionDetails ::
      (RawReactionDetails, Maybe MechanismNode)

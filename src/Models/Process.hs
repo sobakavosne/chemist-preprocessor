@@ -1,6 +1,23 @@
 {-# LANGUAGE DeriveGeneric #-}
 
--- | Haskell models
+-- | This module defines the `ReactionDetails`, `MechanismDetails`, 
+--   and `ProcessDetails` data types for representing the details 
+--   of chemical reactions and their associated mechanisms.
+--
+--   The `ReactionDetails` type encapsulates information about a 
+--   chemical reaction, including the reaction itself, inbound 
+--   reagents (as pairs of `REAGENT_IN` and `Molecule`), outbound 
+--   products (as pairs of `PRODUCT_FROM` and `Molecule`), and 
+--   relevant conditions (as pairs of `ACCELERATE` and `Catalyst`).
+--
+--   The `MechanismDetails` type models the context of a mechanism 
+--   (including its description via `FOLLOW`) and the interactants 
+--   associated with each stage of the mechanism.
+--
+--   Finally, the `ProcessDetails` type aggregates both `ReactionDetails` 
+--   and `MechanismDetails`, providing a comprehensive overview 
+--   of a chemical process.
+--
 module Models.Process where
 
 import           Data.Aeson         (FromJSON, ToJSON)

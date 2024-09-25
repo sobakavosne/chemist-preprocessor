@@ -1,6 +1,13 @@
 {-# LANGUAGE DeriveGeneric #-}
 
--- | Haskell models
+-- | This module defines the `Interactant` and `Explain` data types 
+--   for representing various types of chemical entities and mechanisms 
+--   in Haskell. The `Interactant` type encapsulates different forms of 
+--   interactions, such as accelerations, catalysts, molecules, products, 
+--   reagents, and reactions. The `Explain` type captures mechanisms 
+--   and stages in a chemical process, providing a structured way to 
+--   represent and serialize these entities in JSON format.
+--
 module Models.Interactant where
 
 import           Data.Aeson       (FromJSON, ToJSON)

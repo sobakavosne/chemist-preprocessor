@@ -9,13 +9,15 @@ import           Domain.Converter.Instances ()
 import           Domain.Converter.Type      (Elem (SPath), exact)
 import           Models                     (PathMask)
 
--- | Converts a raw database @Path@ into a @PathMask@.
+-- | Converts a raw database `Path` into a `PathMask`.
 --
--- Parameters:
--- - @Path@ - the raw path data retrieved from the database.
+-- ==== Parameters
 --
--- Returns:
--- - @PathMask@ representing the processed path in a usable format.
+-- * `Path` - the raw path data retrieved from the database.
+--
+-- ==== Returns
+--
+-- * `PathMask` representing the processed path in a usable format.
 toPath :: Path -> IO PathMask
 toPath rawPath = do
   (pathMask :: PathMask) <- (exact . SPath) rawPath

@@ -1,6 +1,21 @@
 {-# LANGUAGE DeriveGeneric #-}
 
--- | Haskell models
+-- | **Models.Mechanism**
+--
+-- This module defines the `Mechanism`, `FOLLOW`, `Stage`, 
+-- and `INCLUDE` data types for representing chemical mechanisms 
+-- and their stages.
+--
+-- The `Mechanism` type encapsulates the essential properties 
+-- of a mechanism, including its ID, name, type, and activation 
+-- energy. The `FOLLOW` type allows for descriptive annotations 
+-- related to the mechanism. The `Stage` type models the stages 
+-- within a mechanism, including order, name, description, and 
+-- associated products. The `INCLUDE` type is defined as a
+-- placeholder for potential future extensions, enabling further
+-- development of the model without breaking existing 
+-- functionality.
+--
 module Models.Mechanism where
 
 import           Data.Aeson   (FromJSON, ToJSON)

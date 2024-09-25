@@ -59,3 +59,15 @@ jobs:
 
       - name: Run tests
         run: cabal test all --test-show-details=always
+
+      - name: Build documentation
+        run: |
+          cabal update
+          cabal haddock --haddock-for-hackage --haddock-hyperlink-source --enable-doc
+  
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.CHEMIST_DOC }}
+          publish_dir: ./dist-newstyle/build/<arch>/<ghc-version>/doc/html/<package-name>
+  

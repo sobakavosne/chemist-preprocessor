@@ -10,6 +10,10 @@
      > chmod +x run.sh
      > ./run.sh
 
+   • Documentation:
+
+     https://sobakavosne.github.io/chemist/
+
 :Issues
 
    • If you encounter a "permissions" error while Docker is running:

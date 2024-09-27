@@ -5,6 +5,7 @@ synopsis:      Chemist
 author:        Λ
 maintainer:    sobakavosne@gmail.com
 category:      Database
+homepage:      https://sobakavosne.github.io/chemist/
 
 common shared-deps
   build-depends:

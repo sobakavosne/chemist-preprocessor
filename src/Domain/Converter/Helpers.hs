@@ -10,7 +10,7 @@ import           Data.List       (groupBy)
 import           Data.Map.Strict (empty, insertWith, toList)
 import           Data.Tuple      (swap)
 
--- Let's suppose we have a unique values
+-- | Let's suppose we have a unique values
 relationOf :: Eq b => [(a, b)] -> [(c, b)] -> [(a, c)]
 relationOf xs ys = [(x1, y1) | (x1, x2) <- xs, (y1, y2) <- ys, x2 == y2]
 

@@ -1,6 +1,11 @@
 module Models.Graph where
 
--- Bolt models
+-- | This module defines data types for representing graph structures 
+--   in a reaction and mechanism context, specifically `RawReactionDetails` 
+--   and `RawMechanismDetails`. It uses nodes and relationships from 
+--   the Bolt database library to encapsulate the details of reactions 
+--   and mechanisms in a chemical graph.
+--
 import           Database.Bolt (Node, Relationship)
 
 -- | Represents a node in a reaction graph

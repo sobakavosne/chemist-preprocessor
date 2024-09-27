@@ -1,6 +1,10 @@
 {-# LANGUAGE DeriveGeneric #-}
 
--- | WEB masks
+-- | This module defines the `NodeMask`, `RelMask`, `PathMask`, 
+--   `RawMechanismDetailsMask`, and `RawReactionDetailsMask` 
+--   data types for creating WEB masks that encapsulate the properties 
+--   of nodes and relationships in a graph representation.
+--
 module Models.Mask where
 
 import           Data.Aeson         (FromJSON, ToJSON)

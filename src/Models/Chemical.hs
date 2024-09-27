@@ -1,7 +1,11 @@
 {-# LANGUAGE DeriveGeneric  #-}
 {-# LANGUAGE NamedFieldPuns #-}
 
--- | Haskell models
+-- | This module defines data types for chemical entities, including 
+--   `Molecule`, `Reaction`, `Catalyst`, and their respective properties. 
+--   It facilitates JSON serialization and deserialization, providing 
+--   a structure for representing reactions and their components.
+--
 module Models.Chemical where
 
 import           Data.Aeson       (FromJSON, ToJSON, object, withObject, (.:),
@@ -83,7 +87,7 @@ instance FromJSON PRODUCT_FROM
 
 instance ToJSON PRODUCT_FROM
 
--- | `def` - the default value for @ACCELERATE@ corresponds to Standard Temperature and Pressure (STP):
+-- | @def@ - the default value for @ACCELERATE@ corresponds to Standard Temperature and Pressure (STP):
 --   - `temperature` = 273.15 K (Kelvin)
 --   - `pressure`    = 101.325 kPa (kilopascals)
 data ACCELERATE =

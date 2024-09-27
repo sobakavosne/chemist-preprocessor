@@ -65,9 +65,13 @@ jobs:
           cabal update
           cabal haddock
 
+      - name: Copy built files
+        run: |
+          cp -r /home/runner/work/chemist/chemist/dist-newstyle/build/x86_64-linux/ghc-9.4.8/chemist-0.1.0.0/doc/html/chemist .
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           publish_branch: feat-documentation
           github_token: ${{ secrets.CHEMIST_DOC }}
-          publish_dir: /home/runner/work/chemist/chemist/dist-newstyle/build/x86_64-linux/ghc-9.4.8/chemist-0.1.0.0/doc/html/chemist-0.1.0.0-docs
+          publish_dir: .

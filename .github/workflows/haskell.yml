@@ -36,17 +36,17 @@ jobs:
           ghc-version: "9.4.8"
           cabal-version: "3.6"
 
-      # - name: Cache
-      #   uses: actions/cache@v3
-      #   env:
-      #     cache-name: cache-cabal
-      #   with:
-      #     path: ~/.cabal
-      #     key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/*.cabal') }}-${{ hashFiles('**/cabal.project') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-build-${{ env.cache-name }}-
-      #       ${{ runner.os }}-build-
-      #       ${{ runner.os }}-
+      - name: Cache
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-cabal
+        with:
+          path: ~/.cabal
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/*.cabal') }}-${{ hashFiles('**/cabal.project') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
 
       # - name: Install dependencies
       #   run: |
@@ -67,7 +67,10 @@ jobs:
 
       - name: Copy built files
         run: |
-          cp -r /home/runner/work/chemist/chemist/dist-newstyle/build/x86_64-linux/ghc-9.4.8/chemist-0.1.0.0/doc/html/chemist .
+          cp -r /home/runner/work/chemist/chemist/dist-newstyle/build/x86_64-linux/ghc-9.4.8/chemist-0.1.0.0/doc/html/chemist/* .
+
+      - name: List files to be published
+        run: ls -R .
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3

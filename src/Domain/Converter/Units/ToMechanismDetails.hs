@@ -18,12 +18,12 @@ import           Models                     (FOLLOW, INCLUDE, Interactant,
 -- Maps the raw data to more meaningful structures that represent mechanisms,
 -- stages, and interactants.
 --
--- ==== Parameters
+-- __Parameters:__
 --
 -- * `RawMechanismDetails` containing the raw data of the mechanism,
 -- interactants, included entities, stages, and follow-up information.
 --
--- ==== Returns
+-- __Returns:__
 --
 -- * `MechanismDetails` representing the mechanism with its context
 --   and associated stages and interactants.

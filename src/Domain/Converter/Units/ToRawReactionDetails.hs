@@ -21,11 +21,11 @@ def' details = bool details [def] $ null details
 -- mapping the interactants (reagents, products, and catalysts) and reaction
 -- conditions into raw representations that are suitable for database storage.
 --
--- ==== Parameters
+-- __Parameters:__
 --
 -- * `ReactionDetails` - the details of the reaction, including interactants and conditions.
 --
--- ==== Returns
+-- __Returns:__
 --
 -- * `RawReactionDetailsMask` representing the raw version of reaction details
 -- for database operations.

@@ -24,11 +24,11 @@ import           Models                     (ACCELERATE (..), Catalyst (..),
 --   relationships, catalysts, and acceleration factors, and also processes an optional
 --   mechanism if one is associated with the reaction.
 --
--- ==== Parameters
+-- __Parameters:__
 --
 -- * @(RawReactionDetails, Maybe MechanismNode)@ - The raw reaction details and optional mechanism node.
 --
--- ==== Returns
+-- __Returns:__
 --
 -- * A tuple of `ReactionDetails` and an optional `MechanismID`, representing the
 --   reaction's details and an associated mechanism ID, if applicable.

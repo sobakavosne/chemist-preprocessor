@@ -71,15 +71,15 @@ unrecord result key = (lift . headIO key) =<< forM result (`at` key)
 -- | Executes a given BoltActionT action within a Neo4j database context.
 --   Automatically handles connection opening and closing.
 --
---   ==== Parameters
+--   __Parameters:__
 --  
 --   * @BoltActionT IO b@ - the action to execute.
 --  
---   ==== Returns
+--   __Returns:__
 --  
 --   * @IO b@ - the result of the executed action.
 --  
---   ==== Exceptions
+--   __Exceptions:__
 --  
 --   * @BoltError@ if the connection to the database fails or if the action encounters an error.
 
@@ -92,7 +92,7 @@ withNeo4j action = do
 
 -- | Check the health of the Neo4j server by running a simple query.
 --
--- ==== Returns
+-- __Returns:__
 --
 -- * A `HealthCheck` structure indicating server status.
 checkNeo4j :: BoltActionT IO HealthCheck
@@ -103,15 +103,15 @@ checkNeo4j = do
 -- | Fetches reaction details by its identifier from the Neo4j database.
 --   Returns a tuple containing `RawReactionDetails` and optionally `MechanismNode`.
 --
---   ==== Parameters
+--   __Parameters:__
 --  
 --   * `ReactionID` - the unique identifier of the reaction.
 --  
---   ==== Returns
+--   __Returns:__
 --  
 --   * `BoltActionT IO (RawReactionDetails, Maybe MechanismNode)`.
 --  
---   ==== Exceptions
+--   __Exceptions:__
 --  
 --   * `GraphElemError` if the expected nodes or relationships are not found.
 --   * `BoltError`
@@ -157,15 +157,15 @@ fetchReaction id = do
 -- | Creates a new reaction in the Neo4j database using the provided details.
 --   Generates a query to insert a reaction node and related entities.
 --
---   ==== Parameters
+--   __Parameters:__
 --  
 --   * `RawReactionDetailsMask` - containing the details for the new reaction.
 --  
---   ==== Returns
+--   __Returns:__
 --  
 --   * The created `ReactionNode`.
 --  
---   ==== Exceptions
+--   __Exceptions:__
 --  
 --   * `GraphElemError` if the reaction creation fails.
 --   * `BoltError`
@@ -177,15 +177,15 @@ createReaction details = do
 
 -- | Removes a reaction and its associated nodes from the Neo4j database based on the provided ReactionID.
 --
---   ==== Parameters
+--   __Parameters:__
 --
 --   * `ReactionID` - the unique identifier of the reaction to remove.
 --
---   ==== Returns
+--   __Returns:__
 --
 --   * The ID of the removed reaction.
 --
---   ==== Exceptions
+--   __Exceptions:__
 --
 --   * `BoltError`
 removeReaction :: ReactionID -> BoltActionT IO ReactionID
@@ -203,16 +203,16 @@ removeReaction id = do
 -- | Finds the shortest path between two molecules based on their IDs.
 --   The path consists of reactions and relationships between products and reagents.
 --
---   ==== Parameters
+--   __Parameters:__
 --  
 --   * `MoleculeID` - the unique identifier of the starting molecule.
 --   * `MoleculeID` - the unique identifier of the ending molecule.
 --  
---   ==== Returns
+--   __Returns:__
 --  
 --   * A `Path` representing the shortest path between the two molecules.
 --  
---   ==== Exceptions
+--   __Exceptions:__
 --  
 --   * `GraphElemError` if no path is found between the two molecules.
 --   * `BoltError`
@@ -232,15 +232,15 @@ findPath startId endId = do
 -- | Fetches mechanism details by its identifier from the Neo4j database.
 --   Retrieves the mechanism, its stages, participants, and relationships.
 --
---   ==== Parameters
+--   __Parameters:__
 --
 --   * `MechanismID` - the unique identifier of the mechanism.
 --
---   ==== Returns
+--   __Returns:__
 --
 --   * A `RawMechanismDetails` representing the mechanism and its stages.
 --
---   ==== Exceptions
+--   __Exceptions:__
 --
 --   * `GraphElemError` if the expected nodes or relationships are not found.
 --   * `BoltError`

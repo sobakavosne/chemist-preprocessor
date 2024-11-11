@@ -11,11 +11,11 @@ import           Prelude                    hiding (id)
 
 -- | Converts a raw `ReactionNode` into a `Reaction` structure.
 --
--- ==== Parameters
+-- __Parameters:__
 --
 -- * `ReactionNode` - the raw reaction node retrieved from the database.
 --
--- ==== Returns
+-- __Returns:__
 --
 -- * `Reaction` representing the processed reaction node, with only the reaction data.
 toReaction :: ReactionNode -> IO Reaction

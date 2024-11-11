@@ -9,7 +9,7 @@
 -- necessary conversions between raw database representations and 
 -- application-specific data types.
 --
--- Functions include:
+-- Functions included:
 -- 
 -- * `getPathAsync` - Finds the shortest path between two molecules.
 -- * `getHealthAsync` - Retrieves the health status of the Neo4j database.
@@ -45,7 +45,7 @@ import           Prelude                    hiding (id)
 --   Uses the `withNeo4j` wrapper to establish a connection
 --   and execute the health check query.
 --
--- ==== Returns
+-- __Returns:__
 --
 -- * `HealthCheck` containing the status information of the database.
 getHealthAsync :: IO HealthCheck
@@ -55,11 +55,11 @@ getHealthAsync = wait =<< (async . withNeo4j) checkNeo4j
 --   Converts the raw reaction data retrieved from the database into
 --   `ReactionDetails` format.
 --
--- ==== Parameters
+-- __Parameters:__
 --
 -- * `ReactionID` - the unique identifier of the reaction.
 --
--- ==== Returns
+-- __Returns:__
 --
 -- * A tuple of `ReactionDetails` and an optional `MechanismID`, if a mechanism is associated.
 getReactionAsync :: ReactionID -> IO (ReactionDetails, Maybe MechanismID)
@@ -70,11 +70,11 @@ getReactionAsync id =
 --   Converts the given `ReactionDetails` to raw details before calling the
 --   database function to store the reaction.
 --
--- ==== Parameters
+-- __Parameters:__
 --
 -- * `ReactionDetails` - the details of the reaction to be created.
 --
--- ==== Returns
+-- __Returns:__
 --
 -- * `Reaction` - the created reaction with its unique ID.
 postReactionAsync :: ReactionDetails -> IO Reaction
@@ -84,11 +84,11 @@ postReactionAsync details =
 -- | Asynchronously deletes a reaction from the database based on its `ReactionID`.
 --   Uses `withNeo4j` to execute the delete operation.
 --
--- ==== Parameters
+-- __Parameters:__
 --
 -- * `ReactionID` - the unique identifier of the reaction to be deleted.
 --
--- ==== Returns
+-- __Returns:__
 --
 -- * `ReactionID` of the deleted reaction.
 deleteReactionAsync :: ReactionID -> IO ReactionID
@@ -97,12 +97,12 @@ deleteReactionAsync id = wait =<< (async . withNeo4j . removeReaction) id
 -- | Asynchronously finds the shortest path between two molecules based on their `MoleculeID`s.
 --   Fetches the path from the database and converts it to a `PathMask`.
 --
--- ==== Parameters
+-- __Parameters:__
 --
 -- * `MoleculeID` - the starting molecule's ID.
 -- * `MoleculeID` - the ending molecule's ID.
 --
--- ==== Returns
+-- __Returns:__
 --
 -- * `PathMask` representing the shortest path between the two molecules.
 getPathAsync :: MoleculeID -> MoleculeID -> IO PathMask
@@ -111,11 +111,11 @@ getPathAsync start end = toPath =<< wait =<< (async . withNeo4j) (findPath start
 -- | Asynchronously fetches the details of a mechanism based on its `MechanismID`.
 --   Converts the raw mechanism data into `MechanismDetails`.
 --
--- ==== Parameters
+-- __Parameters:__
 --
 -- * `MechanismID` - the unique identifier of the mechanism.
 --
--- ==== Returns
+-- __Returns:__
 --
 -- * `MechanismDetails` representing the mechanism and its stages.
 getMechanismAsync :: MechanismID -> IO MechanismDetails

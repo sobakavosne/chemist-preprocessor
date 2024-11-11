@@ -32,7 +32,7 @@ import           Prelude           hiding (id)
 -- | The `Elem` data type represents various types of Bolt (Neo4j) elements that
 --   can be extracted from the database. It includes:
 --
--- ==== Constructors
+-- __Constructors:__
 --
 -- * `SNode` - Represents nodes.
 -- * `SRel` - Represents relationships.
@@ -48,7 +48,7 @@ data Elem
 -- | The `Identity` data type represents various IDs that can be associated with
 --   nodes or relationships in the graph:
 --
--- ==== Constructors
+-- __Constructors:__
 --
 -- * `NodeId` - Represents a node's unique identifier.
 -- * `URelId` - Represents a universal (undirected) relationship's unique identifier.
@@ -106,7 +106,7 @@ class FromValue a
 -- | The `ElemInteractant` type class defines how to extract an interactant from a `Subject`.
 --   It allows us to convert various database entities into interactants.
 --
--- ==== Usage
+-- __Usage:__
 --
 -- This type class is used to read from the database.
 class ElemInteractant a
@@ -120,7 +120,7 @@ class ElemInteractant a
 -- | The `InteractantElem` type class defines how to extract an element from an `Interactant`.
 --   This allows specific parts of an `Interactant` to be converted into `Masks`.
 --
--- ==== Usage
+-- __Usage:__
 --
 -- This function is used to write into the database.
 class InteractantElem a
@@ -134,7 +134,7 @@ class InteractantElem a
 -- | `exact` converts a `Subject` to an interactant by using the `exactInteractant` function.
 --   It throws a `ParsingError` if the conversion fails; otherwise, it returns the result.
 --
--- ==== Usage
+-- __Usage:__
 --
 -- This function is used to read from the database.
 exact :: ElemInteractant a => Elem -> IO a
@@ -143,7 +143,7 @@ exact = either throwIO pure . exactInteractant
 -- | `exactRaw` converts an `Interactant` to a specific element using `exactElem`.
 --   Similar to `exact`, it throws a `ParsingError` if the conversion fails.
 --
--- ==== Usage
+-- __Usage:__
 --
 -- This function is used to write into the database.
 exactRaw :: InteractantElem a => Interactant -> IO a

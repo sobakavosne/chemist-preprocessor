@@ -1,6 +1,6 @@
 services:
-  chemist:
-    container_name: chemist
+  chemist-preprocessor:
+    container_name: chemist-preprocessor
     build:
       context: .
       dockerfile: Dockerfile
@@ -9,10 +9,10 @@ services:
     depends_on:
       neo4j:
         condition: service_healthy
-      migration:
+      neo4j-migration:
         condition: service_completed_successfully
     healthcheck:
-      test: wget -q -O /dev/null http://chemist:8080/health || exit 1
+      test: wget -q -O /dev/null http://chemist-preprocessor:8080/health || exit 1
       interval: 2s
       timeout: 15s
       retries: 10
@@ -44,8 +44,8 @@ services:
       retries: 10
       start_period: 1s
 
-  migration:
-    container_name: migration
+  neo4j-migration:
+    container_name: neo4j-migration
     build:
       context: .
       dockerfile: Dockerfile.migration

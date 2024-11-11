@@ -1,4 +1,4 @@
 services:
-  chemist:
+  chemist-preprocessor:
     build:
       dockerfile: Dockerfile.dev

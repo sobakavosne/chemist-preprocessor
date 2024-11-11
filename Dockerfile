@@ -39,7 +39,7 @@ COPY . .
 
 RUN \
   cabal update && \
-  cabal install --installdir=/app exe:chemist && \
+  cabal install --installdir=/app exe:chemist-preprocessor && \
   cabal build
 
 # Stage 2: Runtime stage
@@ -47,10 +47,10 @@ FROM debian:bullseye-slim
 
 WORKDIR /app
 
-COPY --from=builder /app/chemist /app/chemist
+COPY --from=builder /app/chemist-preprocessor /app/chemist-preprocessor
 COPY .env /app/.env
 
-RUN chmod +x /app/chemist
+RUN chmod +x /app/chemist-preprocessor
 
 RUN apt-get update && \
   apt-get install -y libnuma1 libgmp10 && \
@@ -60,4 +60,4 @@ RUN apt-get update && \
 
 EXPOSE 8080
 
-CMD ["/app/chemist"]
+CMD ["/app/chemist-preprocessor"]

@@ -1,4 +1,6 @@
-:Chemist Graph DB
+A mid-level abstraction layer that leverages Neo4j's low-level driver.
+
+:Chemist Preprocessor
 
    • Create .env file from examples/
 
@@ -12,7 +14,7 @@
 
    • Documentation:
 
-     https://sobakavosne.github.io/chemist/
+     https://sobakavosne.github.io/chemist-preprocessor/
 
 :Issues
 

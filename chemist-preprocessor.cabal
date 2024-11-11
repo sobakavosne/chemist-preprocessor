@@ -1,11 +1,11 @@
 cabal-version: 3.6
-name:          chemist
+name:          chemist-preprocessor
 version:       0.1.0.0
-synopsis:      Chemist 
+synopsis:      Chemist Raw Data Preprocessor
 author:        Λ
 maintainer:    sobakavosne@gmail.com
 category:      Database
-homepage:      https://sobakavosne.github.io/chemist/
+homepage:      https://sobakavosne.github.io/chemist-preprocessor/
 
 common shared-deps
   build-depends:
@@ -65,14 +65,14 @@ library
   hs-source-dirs:   src
   default-language: Haskell2010
 
-executable chemist
+executable chemist-preprocessor
   import:           shared-deps
   main-is:          Main.hs
-  build-depends:    chemist
+  build-depends:    chemist-preprocessor
   hs-source-dirs:   app
   default-language: Haskell2010
 
-test-suite chemist-test
+test-suite chemist-preprocessor-test
   import:           shared-deps
   default-language: Haskell2010
   type:             exitcode-stdio-1.0
@@ -85,4 +85,4 @@ test-suite chemist-test
     Domain.Converter.Units.ToReactionDetailsSpec
     Domain.Converter.Units.ToReactionSpec
 
-  build-depends:    chemist
+  build-depends:    chemist-preprocessor

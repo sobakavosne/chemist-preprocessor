@@ -11,11 +11,11 @@ import           Models                     (PathMask)
 
 -- | Converts a raw database `Path` into a `PathMask`.
 --
--- ==== Parameters
+-- __Parameters:__
 --
 -- * `Path` - the raw path data retrieved from the database.
 --
--- ==== Returns
+-- __Returns:__
 --
 -- * `PathMask` representing the processed path in a usable format.
 toPath :: Path -> IO PathMask

@@ -30,7 +30,7 @@ instance ToJSON Interactant
 
 instance FromJSON Interactant
 
--- | Secondary type for Mechanism explanation
+-- | Primary type for Mechanism explanation
 data Explain
   = EMechanism Mechanism
   | EStage Stage

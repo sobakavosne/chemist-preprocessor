@@ -1,30 +1,85 @@
 {-# LANGUAGE DataKinds     #-}
 {-# LANGUAGE TypeOperators #-}
 
--- | Module defining the API endpoints for the application using the Servant library.
---
---   This module provides handlers for various endpoints that interact with 
---   the underlying domain services to perform operations related to reactions, 
---   mechanisms, paths, and health checks of the Neo4j database.
---
--- ==== Reactions
---   - @GET \/reaction\/{id}@: Fetches details of a reaction by its identifier.
---   - @POST \/reaction@: Creates a new reaction with the provided details.
---   - @DELETE \/reaction/{id}@: Deletes a reaction by its identifier.
---
--- ==== Paths
---   - @GET \/path\/{start}\/{end}@: Retrieves the shortest path between two molecules.
---
--- ==== Mechanisms
---   - @GET \/mechanism\/{id}@: Fetches details of a mechanism by its identifier.
---
--- ==== Processes
---   - @GET \/process\/{id}@: Retrieves full information about a reaction, 
---     including its mechanism if present.
---
--- ==== Checks
---   - @GET \/health@: Returns the health status of the Neo4j database.
---
+{-|
+Module defining the API endpoints for the application using the Servant library.
+
+This module provides handlers for various endpoints that interact with 
+the underlying domain services to perform operations related to reactions, 
+mechanisms, paths, and health checks of the Neo4j database.
+
+==== Reactions
+  @GET \/reaction\/{id}@ 
+  
+  Fetches details of a reaction by its identifier.
+
+      __Parameters:__
+
+      - `id`: `ReactionID` - The unique identifier (`Int`) of the reaction to retrieve.
+
+      __Response Body:__ `ReactionDetails`
+
+  @POST \/reaction@
+  
+  Creates a new reaction with the provided details.
+
+      __Body:__
+
+      - `details`: `ReactionDetails` - The details of the reaction to create.
+
+      __Response:__ `Reaction`
+
+  @DELETE \/reaction\/{id}@
+  
+  Deletes a reaction by its identifier.
+
+      __Parameters:__
+
+      - `id`: `ReactionID` - The unique identifier of the reaction to delete (`Int`).
+
+      __Response:__ `ReactionID`
+
+==== Paths
+  @GET \/path\/{start}\/{end}@
+  
+  Retrieves the shortest path between two molecules.
+
+      __Parameters:__
+
+      - `start`: `MoleculeID` - The starting molecule identifier (`Int`).
+      - `end`: `MoleculeID` - The ending molecule identifier (`Int`).
+
+      __Response:__ `PathMask`
+
+==== Mechanisms
+  @GET \/mechanism\/{id}@
+  
+  Fetches details of a mechanism by its identifier.
+
+      __Parameters:__
+
+      - `id`: `MechanismID` - The unique identifier (`Int`) of the mechanism to retrieve.
+
+      __Response:__ `MechanismDetails`
+
+==== Processes
+  @GET \/process\/{id}@
+  
+  Retrieves complete information about a reaction, including its mechanism, if available.
+
+      __Parameters:__
+      
+      - `id`: `ReactionID` - The unique identifier (`Int`) of the reaction to retrieve complete information.
+
+      __Response:__ `ProcessDetails`
+
+==== Checks
+  @GET \/health@
+  
+  Returns the health status of the Neo4j database.
+
+      __Response:__ `HealthCheck`
+-}
 module API.Endpoints
   ( api
   , server
@@ -68,11 +123,11 @@ json = "application/json"
 -- | Handles requests to the health check endpoint. Returns a `JSON` response
 -- containing a `HealthCheck` object with the status of the Neo4j server.
 --
--- ==== Returns
+-- __Returns:__
 --
 -- - @S.Handler (Content HealthCheck)@
-healthHandler :: S.Handler (Content HealthCheck)
-healthHandler = do
+getHealthHandler :: S.Handler (Content HealthCheck)
+getHealthHandler = do
   result <- liftIO . try $ wait =<< async getHealthAsync
   (liftIO . log) result
   either healthError (return . S.addHeader json) result
@@ -80,11 +135,11 @@ healthHandler = do
 -- | Handles requests to get reaction details by its identifier. Returns a `JSON`
 -- response containing `ReactionDetails` for the specified reaction ID.
 --
--- == Parameters
+-- __Parameters:__
 --
 -- * `ReactionID` - the unique identifier of the reaction
 --
--- ==== Returns
+-- __Returns:__
 --
 -- - @S.Handler (Content ReactionDetails)@
 getReactionHandler :: ReactionID -> S.Handler (Content ReactionDetails)
@@ -96,13 +151,13 @@ getReactionHandler id = do
 -- | Handles requests to create a new reaction with the provided details. Returns
 -- a `JSON` response with the created `Reaction`.
 --
--- ==== Parameters
+-- __Parameters:__
 --
 -- * `ReactionDetails` - details of the reaction to be created.
 --   Note: `ACCELERATE` and `Catalyst` are optional. If they are not provided,
 --   default values will be used.
 --
--- ==== Returns
+-- __Returns:__
 --
 -- * @S.Handler (Content Reaction)@
 postReactionHandler :: ReactionDetails -> S.Handler (Content Reaction)
@@ -114,11 +169,11 @@ postReactionHandler details = do
 -- | Handles requests to delete a reaction by its identifier. Returns a `JSON`
 -- response with the ID of the deleted reaction.
 --
--- ==== Parameters
+-- __Parameters:__
 --
 -- * `ReactionID` - the unique identifier of the reaction to be deleted
 --
--- ==== Returns
+-- __Returns:__
 -- 
 -- * @S.Handler (Content ReactionID)@
 deleteReactionHandler :: ReactionID -> S.Handler (Content ReactionID)
@@ -130,12 +185,12 @@ deleteReactionHandler id = do
 -- | Handles requests to get the shortest path from one molecule to another through reactions
 -- and molecules. Requires `start` and `end` molecule IDs.
 --
--- ==== Parameters
+-- __Parameters:__
 --
 -- * `MoleculeID` - the starting molecule ID
 -- * `MoleculeID` - the ending molecule ID
 --
--- ==== Returns
+-- __Returns:__
 --
 -- * @S.Handler (Content PathMask)@
 getPathHandler :: MoleculeID -> MoleculeID -> S.Handler (Content PathMask)
@@ -147,11 +202,11 @@ getPathHandler start end = do
 -- | Handles requests to get the details of a mechanism by its identifier. Returns a `JSON`
 -- response containing `MechanismDetails` for the specified mechanism ID.
 --
--- ==== Parameters
+-- __Parameters:__
 --
 -- * `MechanismID` - the unique identifier of the mechanism
 --
--- ==== Returns
+-- __Returns:__
 --
 -- * @S.Handler (Content MechanismDetails)@
 getMechanismHandler :: MechanismID -> S.Handler (Content MechanismDetails)
@@ -163,11 +218,11 @@ getMechanismHandler id = do
 -- | Handles requests to get full information about a reaction, including its mechanism
 -- if present. Returns a `JSON` response containing `ProcessDetails` for the specified reaction ID.
 --
--- ==== Parameters
+-- __Parameters:__
 --
 -- * `ReactionID` - the unique identifier of the reaction
 --
--- ==== Returns
+-- __Returns:__
 --
 -- * @S.Handler (Content ProcessDetails)@
 getProcessDetailsHandler :: ReactionID -> S.Handler (Content ProcessDetails)
@@ -184,7 +239,7 @@ getProcessDetailsHandler id = do
 
 server :: S.Server API
 server =
-  healthHandler S.:<|>
+  getHealthHandler S.:<|>
   getReactionHandler S.:<|>
   postReactionHandler S.:<|>
   deleteReactionHandler S.:<|>

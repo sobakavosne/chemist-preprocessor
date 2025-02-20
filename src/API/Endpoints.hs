@@ -88,9 +88,7 @@ module API.Endpoints
 import           API.Error                (healthError, mismatchError,
                                            serviceError, toEither)
 import           API.Logger               (log)
-import           Control.Concurrent.Async (async, wait)
 import           Control.Exception        (try)
-import           Control.Monad            ((<=<))
 import           Control.Monad.IO.Class   (MonadIO (liftIO))
 import           Domain.Service           (deleteReactionAsync, getHealthAsync,
                                            getMechanismAsync, getPathAsync,
@@ -128,8 +126,8 @@ json = "application/json"
 -- - @S.Handler (Content HealthCheck)@
 getHealthHandler :: S.Handler (Content HealthCheck)
 getHealthHandler = do
-  result <- liftIO . try $ wait =<< async getHealthAsync
-  (liftIO . log) result
+  result <- liftIO . try $ getHealthAsync
+  liftIO . log $ result
   either healthError (return . S.addHeader json) result
 
 -- | Handles requests to get reaction details by its identifier. Returns a `JSON`
@@ -144,8 +142,8 @@ getHealthHandler = do
 -- - @S.Handler (Content ReactionDetails)@
 getReactionHandler :: ReactionID -> S.Handler (Content ReactionDetails)
 getReactionHandler id = do
-  result <- liftIO . try $ wait =<< (async . fmap fst . getReactionAsync) id
-  (liftIO . log) result
+  result <- liftIO . try . fmap fst . getReactionAsync $ id
+  liftIO . log $ result
   either serviceError (return . S.addHeader json) result
 
 -- | Handles requests to create a new reaction with the provided details. Returns
@@ -162,8 +160,8 @@ getReactionHandler id = do
 -- * @S.Handler (Content Reaction)@
 postReactionHandler :: ReactionDetails -> S.Handler (Content Reaction)
 postReactionHandler details = do
-  result <- liftIO . try $ wait =<< (async . postReactionAsync) details
-  (liftIO . log) result
+  result <- liftIO . try $ postReactionAsync details
+  liftIO . log $ result
   either serviceError (return . S.addHeader json) result
 
 -- | Handles requests to delete a reaction by its identifier. Returns a `JSON`
@@ -178,8 +176,8 @@ postReactionHandler details = do
 -- * @S.Handler (Content ReactionID)@
 deleteReactionHandler :: ReactionID -> S.Handler (Content ReactionID)
 deleteReactionHandler id = do
-  result <- liftIO . try $ wait =<< (async . deleteReactionAsync) id
-  (liftIO . log) result
+  result <- liftIO . try $ deleteReactionAsync id
+  liftIO . log $ result
   either serviceError (return . S.addHeader json) result
 
 -- | Handles requests to get the shortest path from one molecule to another through reactions
@@ -195,8 +193,8 @@ deleteReactionHandler id = do
 -- * @S.Handler (Content PathMask)@
 getPathHandler :: MoleculeID -> MoleculeID -> S.Handler (Content PathMask)
 getPathHandler start end = do
-  result <- liftIO . try $ wait =<< async (getPathAsync start end)
-  (liftIO . log) result
+  result <- liftIO . try $ getPathAsync start end
+  liftIO . log $ result
   either serviceError (return . S.addHeader json) result
 
 -- | Handles requests to get the details of a mechanism by its identifier. Returns a `JSON`
@@ -211,8 +209,8 @@ getPathHandler start end = do
 -- * @S.Handler (Content MechanismDetails)@
 getMechanismHandler :: MechanismID -> S.Handler (Content MechanismDetails)
 getMechanismHandler id = do
-  result <- liftIO . try $ wait =<< (async . getMechanismAsync) id
-  (liftIO . log) result
+  result <- liftIO . try $ getMechanismAsync id
+  liftIO . log $ result
   either serviceError (return . S.addHeader json) result
 
 -- | Handles requests to get full information about a reaction, including its mechanism
@@ -227,14 +225,14 @@ getMechanismHandler id = do
 -- * @S.Handler (Content ProcessDetails)@
 getProcessDetailsHandler :: ReactionID -> S.Handler (Content ProcessDetails)
 getProcessDetailsHandler id = do
-  reaction <- liftIO . try $ wait =<< (async . getReactionAsync) id
+  reaction <- liftIO . try $ getReactionAsync id
   mechanism <-
     either
       mismatchError
-      (traverse (liftIO . try . (wait <=< (async . getMechanismAsync))) . snd)
+      (traverse (liftIO . try . getMechanismAsync) . snd)
       reaction
   let result = (ProcessDetails . fst <$> reaction) <*> toEither mechanism
-  (liftIO . log) result
+  liftIO . log $ result
   either serviceError (return . S.addHeader json) result
 
 server :: S.Server API
